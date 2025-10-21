@@ -1,18 +1,8 @@
 #include "DeltaVObject.h"
-#include <windows.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
 #include "StringOperations.h"
 #include <stack>
-#include <memory>
-#include <codecvt>
-#include <locale>
-#include <iomanip>
-#include <map>
-#include <set>
-#include <cstdlib>
+#include <fstream>
+
 
 using namespace std; // Import entire std namespace
 
@@ -196,9 +186,9 @@ int main() {
 
 	//string SourceFile="fhx/Test.fhx";
 	//string SourceFile="fhx/SJC2020.fhx";
-	string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
+	//string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
 	//string SourceFile="fhx/LLDVGIA.fhx";
-	//string SourceFile="fhx/PCL3.fhx";
+	string SourceFile="fhx/PCL3.fhx";
 
 	deleteFilesInFolder("OutputTables");
 

@@ -1,15 +1,16 @@
 #ifndef FILEUTILS_H
 #define FILEUTILS_H
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <chrono>
-#include <ctime>
 #include <vector>
-#include <conio.h> // For _kbhit and _getch
+#include <iostream>
 #include <map>
-#include <fstream>
-#include <sstream>
+#include <chrono>
+
+
+//#include <ctime>
+//#include <conio.h> 
+//#include <sstream>
+
 using namespace std; // Import entire std namespace.
 
 struct TableConfig{
@@ -21,9 +22,9 @@ struct TableConfig{
 };
 
 
-struct thousands_separator : std::numpunct<char> {
+struct thousands_separator : numpunct<char> {
     char do_thousands_sep() const { return '.'; } // Use dot as separator
-    std::string do_grouping() const { return "\3"; } // Group every 3 digits
+    string do_grouping() const { return "\3"; } // Group every 3 digits
 };
 
 void deleteFilesInFolder(const string& folderName);
@@ -36,9 +37,9 @@ void createOutTable(const vector<string>& headers,string file_name);
 void insertHeader(TableConfig& table,string new_header);
 map<string, TableConfig> loadOutputConfig(string file_name);
 vector<string> splitString(const string& str,int qoute_count, int& comment_count);
-void updateProgress(uint64_t current_line,uint64_t total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, std::chrono::steady_clock::time_point& last_update);
+void updateProgress(uint64_t current_line,uint64_t total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update);
 string escapeCSV(const string& data);
-uint64_t countLines(const std::string& filename);
+uint64_t countLines(const string& filename);
 chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_point start_time);
 string trim(const string &str);
 void playEndSound();
