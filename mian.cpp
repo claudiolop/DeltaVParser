@@ -216,7 +216,7 @@ int main() {
 	while (getline(fhx_file, file_line)) {
 		line_count++;
 
-		file_line=swapChars(file_line);
+		file_line=skipNull(file_line);
 		file_line=trim(file_line);
 
 		if (file_line.empty()) continue;
