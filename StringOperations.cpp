@@ -5,6 +5,41 @@
 
 using namespace std; // Import entire std namespace.
 
+
+
+vector<string> splitString(const string& str,int qoute_count, int& comment_count) {
+	vector<string> result;
+    string new_line="";			//Whatever is to the left of { or }
+    string delimiter="";
+	int char_count=-1;
+	for (char c : str) {
+        char_count++;
+		if (c=='"' and comment_count%2==0) qoute_count++;
+		if (qoute_count % 2 ==0){
+			if (c=='/' and char_count<=str.size() and comment_count%2==0) if (str[char_count+1]=='*') comment_count++;
+			if (c=='/' and comment_count%2!=0) if (str[char_count-1]=='*'){
+				comment_count--;
+				continue;
+			} 
+			if (comment_count%2!=0) continue;	
+			if ((c == '{') or (c == '}')) {		//if I find a { or } when I'm not between qoutes 	
+				if (!new_line.empty()) result.push_back(new_line);
+				delimiter=c;
+				result.push_back(delimiter);										//and I push the { or } as another line	
+				new_line.clear();
+				continue;
+			}
+			new_line += c;										//clear new_line to continue with the following part of the string
+		} else {
+			if (c=='{' or c=='}')new_line += ' ';						//If I"m between qoutes and I find a { or } I have to add a space to make sure is not interpreted as a delimiter
+			new_line += c;
+		}
+	}
+	if (!new_line.empty()) result.push_back(new_line); 											//When I'm done, if there is somenthing left,is pushed.
+
+	return result;
+}
+
 void deleteFilesInFolder(const string& folderName){
 	WIN32_FIND_DATA fileData;
     HANDLE hFind;
@@ -26,7 +61,14 @@ void deleteFilesInFolder(const string& folderName){
     FindClose(hFind);
 }
 
-string swapChars(const string& str){
+string trim(const string &str) {
+    size_t first = str.find_first_not_of(" \t\r\n\0"); // Find first non-whitespace
+    size_t last = str.find_last_not_of(" \t\r\n\0"); // Find last non-whitespace
+    if (first == string::npos) {return "";} // String is all whitespace
+	return str.substr(first, (last - first + 1));
+}
+
+string skipNull(const string& str){
 	string result;
 	int int_char;
 	for (int i=0;i<str.size();i++){
@@ -36,29 +78,28 @@ string swapChars(const string& str){
 	return result;
 }
 
-void createOutTable(const vector<string>& headers,string file_name){
-	string text;
-	
-	string file_path="OutputTables/"+file_name+".csv";
-	ifstream file_check(file_path);
-    if (file_check.good()) return;
-	ofstream file(file_path, ios::app | ios::binary);     // Open Source Filesda		
-	for (const auto& header : headers) text+=escapeCSV(header)+",";
-	text.pop_back();
-	file<<text<<"\n";
-	file.close();
+string escapeCSV(const string& data) {
+    if (data=="") return data;
+	if (data.find(',') == string::npos && data.find('"') == string::npos) return data; // No commas or quotes, no escaping needed
+    
+    string escaped = "\"";
+    for (char c : data) {
+        if (c == '"') escaped += "\"\""; // Escape quotes by doubling
+        else escaped += c;
+    }
+    escaped += "\"";
+    return escaped;
 }
 
-string loadWordList(string file_name){
-	string loadWordList;
-	string line;
-	ifstream file("Config/"+file_name);
-	if (!file.is_open()) return loadWordList;
-    while (getline(file, line)) loadWordList+=" "+line;
-    loadWordList+=" ";
-	file.close();
-    return loadWordList;
-	
+void insertHeader(TableConfig& table,string new_header){
+	bool header_found=false;
+	for (const auto header : table.headers){		//Search if the header exists.
+		if (header==new_header){
+			header_found=true;
+			break;
+		}
+	}
+	if (!header_found) table.headers.push_back(new_header);
 }
 
 vector<vector<string>> readCSVFile(string file_name){
@@ -101,8 +142,6 @@ vector<vector<string>> readCSVFile(string file_name){
 
 map<string, TableConfig> loadTypeConfig(string file_name){
 	map<string, TableConfig> config_info;
-	
-	
 	string first_level_action;
 	string first_level_table;
 	string data_action;
@@ -127,8 +166,6 @@ map<string, TableConfig> loadTypeConfig(string file_name){
 			}
 		}
 	}
-	
-	
 	return config_info;
 }
 
@@ -157,37 +194,53 @@ map<string, TableConfig> loadTableConfig(string file_name){
 	return config_info;
 }
 
-vector<string> splitString(const string& str,int qoute_count, int& comment_count) {
-	vector<string> result;
-    string new_line="";			//Whatever is to the left of { or }
-    string delimiter="";
-	int char_count=-1;
-	for (char c : str) {
-        char_count++;
-		if (c=='"' and comment_count%2==0) qoute_count++;
-		if (qoute_count % 2 ==0){
-			if (c=='/' and char_count<=str.size() and comment_count%2==0) if (str[char_count+1]=='*') comment_count++;
-			if (c=='/' and comment_count%2!=0) if (str[char_count-1]=='*'){
-				comment_count--;
-				continue;
-			} 
-			if (comment_count%2!=0) continue;	
-			if ((c == '{') or (c == '}')) {		//if I find a { or } when I'm not between qoutes 	
-				if (!new_line.empty()) result.push_back(new_line);
-				delimiter=c;
-				result.push_back(delimiter);										//and I push the { or } as another line	
-				new_line.clear();
-				continue;
-			}
-			new_line += c;										//clear new_line to continue with the following part of the string
-		} else {
-			if (c=='{' or c=='}')new_line += ' ';						//If I"m between qoutes and I find a { or } I have to add a space to make sure is not interpreted as a delimiter
-			new_line += c;
-		}
-	}
-	if (!new_line.empty()) result.push_back(new_line); 											//When I'm done, if there is somenthing left,is pushed.
+string loadWordList(string file_name){
+	string loadWordList;
+	string line;
+	ifstream file("Config/"+file_name);
+	if (!file.is_open()) return loadWordList;
+    while (getline(file, line)) loadWordList+=" "+line;
+    loadWordList+=" ";
+	file.close();
+    return loadWordList;
+}
 
-	return result;
+void createOutTable(const vector<string>& headers,string file_name){
+	string text;
+	string file_path="OutputTables/"+file_name+".csv";
+	ifstream file_check(file_path);
+    if (file_check.good()) return;
+	ofstream file(file_path, ios::app | ios::binary);   
+	for (const auto& header : headers) text+=escapeCSV(header)+",";
+	text.pop_back();
+	file<<text<<"\n";
+	file.close();
+}
+
+uint64_t countLines(const std::string& filename) {
+	std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open " << filename << "!" << std::endl;
+        return 0;
+    }
+    cout.imbue(std::locale(cout.getloc(), new thousands_separator));
+	uint64_t line_count = 0;
+    std::string line;
+	
+    char frames[] = {'|', '/', '-', '\\'};
+	int frame_count=0;
+	
+	while (std::getline(file, line)) {
+		line_count++;
+		if (line_count % 20000==0){
+			cout<<"\rCounting lines: "<<frames[frame_count]<<flush;
+			frame_count++;
+			if (frame_count>=sizeof(frames)) frame_count=0;
+		}	
+	}
+    file.close();
+	cout<<"\r";
+    return line_count;
 }
 
 void updateProgress(uint64_t current_line,uint64_t total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update) {
@@ -219,45 +272,6 @@ void updateProgress(uint64_t current_line,uint64_t total_lines, double update_ra
     last_update = now;
 }
 
-string escapeCSV(const string& data) {
-    if (data=="") return data;
-	if (data.find(',') == string::npos && data.find('"') == string::npos) {return data;} // No commas or quotes, no escaping needed
-    
-    string escaped = "\"";
-    for (char c : data) {
-        if (c == '"') escaped += "\"\""; // Escape quotes by doubling
-        else escaped += c;
-    }
-    escaped += "\"";
-    return escaped;
-}
-
-uint64_t countLines(const std::string& filename) {
-	std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open " << filename << "!" << std::endl;
-        return 0;
-    }
-    cout.imbue(std::locale(cout.getloc(), new thousands_separator));
-	uint64_t line_count = 0;
-    std::string line;
-	
-    char frames[] = {'|', '/', '-', '\\'};
-	int frame_count=0;
-	
-	while (std::getline(file, line)) {
-		line_count++;
-		if (line_count % 20000==0){
-			cout<<"\rCounting lines: "<<frames[frame_count]<<flush;
-			frame_count++;
-			if (frame_count>=sizeof(frames)) frame_count=0;
-		}	
-	}
-    file.close();
-	cout<<"\r";
-    return line_count;
-}
-
 chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_point start_time) {
 	auto now = time(nullptr);
 	if (start_time == std::chrono::steady_clock::time_point{}){
@@ -272,24 +286,6 @@ chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_poi
 		cout<<"Total Time: "<< minutes << " min " << seconds << " sec\n";
 		return chrono::steady_clock::now();
 	}
-}
-
-string trim(const string &str) {
-    size_t first = str.find_first_not_of(" \t\r\n\0"); // Find first non-whitespace
-    size_t last = str.find_last_not_of(" \t\r\n\0"); // Find last non-whitespace
-    if (first == string::npos) {return "";} // String is all whitespace
-	return str.substr(first, (last - first + 1));
-}
-
-void insertHeader(TableConfig& table,string new_header){
-	bool header_found=false;
-	for (const auto header : table.headers){		//Search if the header exists.
-		if (header==new_header){
-			header_found=true;
-			break;
-		}
-	}
-	if (!header_found) table.headers.push_back(new_header);
 }
 
 void playEndSound() {
