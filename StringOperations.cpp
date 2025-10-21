@@ -166,17 +166,29 @@ map<string, TableConfig> loadTableConfig(string file_name){
 	return config_info;
 }
 
-vector<string> splitString(const string& str,int qoute_count) {
+vector<string> splitString(const string& str,int qoute_count, int& comment_count) {
 	vector<string> result;
     string new_line="";			//Whatever is to the left of { or }
     string delimiter="";
+	int char_count=-1;
 	for (char c : str) {
-        if (c=='"') qoute_count++;
-		if ((qoute_count % 2 ==0) and ((c == '{') or (c == '}'))) {		//if I find a { or } when I'm not between qoutes 	
-			if (!new_line.empty()) result.push_back(new_line);
-			delimiter=c;
-			result.push_back(delimiter);										//and I push the { or } as another line	
-			new_line.clear();											//clear new_line to continue with the following part of the string
+        char_count++;
+		if (c=='"' and comment_count%2==0) qoute_count++;
+		if (qoute_count % 2 ==0){
+			if (c=='/' and char_count<=str.size() and comment_count%2==0) if (str[char_count+1]=='*') comment_count++;
+			if (c=='/' and comment_count%2!=0) if (str[char_count-1]=='*'){
+				comment_count--;
+				continue;
+			} 
+			if (comment_count%2!=0) continue;	
+			if ((c == '{') or (c == '}')) {		//if I find a { or } when I'm not between qoutes 	
+				if (!new_line.empty()) result.push_back(new_line);
+				delimiter=c;
+				result.push_back(delimiter);										//and I push the { or } as another line	
+				new_line.clear();
+				continue;
+			}
+			new_line += c;										//clear new_line to continue with the following part of the string
 		} else {
 			if (c=='{' or c=='}')new_line += ' ';						//If I"m between qoutes and I find a { or } I have to add a space to make sure is not interpreted as a delimiter
 			new_line += c;
@@ -276,23 +288,6 @@ string trim(const string &str) {
     size_t last = str.find_last_not_of(" \t\r\n\0"); // Find last non-whitespace
     if (first == string::npos) {return "";} // String is all whitespace
 	return str.substr(first, (last - first + 1));
-}
-
-string RemoveComments(bool& MultiLine, string str){
-	size_t first = str.find("/*"); 								// Get the position of the opening
-	if (!MultiLine and first == string::npos) {return str;} 	// If not multiline and opening not foud, return.
-	if (MultiLine){first=0;}									// If multiline, start from first (
-	size_t last = str.find("*/"); 		// Get the position of the closing
-	if (last == string::npos) {						// If not found, 	
-			MultiLine=true;								// Is multiline
-			last= str.size();}							// and end with last
-		else
-		{
-			MultiLine=false;
-			last=last+2;
-		}
-	str=str.substr(0,first)+str.substr(last,str.size());
-	return str;
 }
 
 void insertHeader(TableConfig& table,string new_header){
