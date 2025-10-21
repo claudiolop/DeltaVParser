@@ -1,17 +1,8 @@
-#include <windows.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <chrono>
-#include <ctime>
-#include <conio.h> // For _kbhit and _getch
-#include <vector>
 #include "StringOperations.h"
-#include <map>
+#include <windows.h>
 #include <fstream>
-#include <sstream>
-#include <locale>
 #include <iomanip>
+
 using namespace std; // Import entire std namespace.
 
 void deleteFilesInFolder(const string& folderName){

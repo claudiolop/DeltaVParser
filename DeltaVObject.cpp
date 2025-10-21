@@ -1,10 +1,6 @@
 #include "DeltaVObject.h"
 #include "StringOperations.h"
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <map>
-
+#include <fstream>
 
 TableConfig DeltaVObject::type_config;
 TableConfig DeltaVObject::table_config;

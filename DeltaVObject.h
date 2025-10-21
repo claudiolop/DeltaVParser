@@ -1,11 +1,9 @@
 #ifndef DELTAVOBJECT_H
 #define DELTAVOBJECT_H
-
-#include <string>
-#include <vector>
-#include <memory>
-#include <map>
 #include "StringOperations.h"
+#include <memory>
+
+
 using namespace std; // Import entire std namespace.
 
 // Struct for attributes
