@@ -181,6 +181,7 @@ int main() {
 	std::chrono::steady_clock::time_point start_time=printCurrentTime(std::chrono::steady_clock::time_point{});
 	bool MultiLineComment=false;
 	int qoute_count=0;
+	int comment_count=0;
 	int update_rate=10000;
 	vector<string> deltav_line;
 	string file_line;
@@ -193,13 +194,11 @@ int main() {
 
 	//CHECK ELECTRONIC SIGNATURE, EL NAME DE
 
-	//string SourceFile="SIS_DRY.fhx";
-	//string SourceFile="SJC2020_O.fhx";
-	//string SourceFile="CTRL-SIS-001.fhx";
-	string SourceFile="fhx/Test.fhx";
+	//string SourceFile="fhx/Test.fhx";
 	//string SourceFile="fhx/SJC2020.fhx";
-	//string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
+	string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
 	//string SourceFile="fhx/LLDVGIA.fhx";
+	//string SourceFile="fhx/PCL3.fhx";
 
 	deleteFilesInFolder("OutputTables");
 
@@ -227,22 +226,17 @@ int main() {
 	while (getline(fhx_file, file_line)) {
 		line_count++;
 
-		if (line_count>5610) {
-			//	cout<<"\r"<<line_count<<flush;
-		}
-
 		file_line=swapChars(file_line);
 		file_line=trim(file_line);
-		file_line=RemoveComments(MultiLineComment, file_line);				//Remove comments.
 
 		if (file_line.empty()) continue;
 
-		log_file<<line_count<<": "<<file_line<<"\n";
-		deltav_lines = splitString(file_line,qoute_count);						//If there are { or } within the line, splits those lines
+		//log_file<<line_count<<": "<<file_line<<"\n";
+		deltav_lines = splitString(file_line,qoute_count,comment_count);						//If there are { or } within the line, splits those lines
 		
 		for (string& deltav_line : deltav_lines) {
-			//	cout<<deltav_line<<"\n";
 			if (qoute_count%2==0) qoute_count=0;
+			if (comment_count%2==0) comment_count=0;
 			size_t user_pos = deltav_line.find("user=");			// Skip the lines starting with "user="
 			if (user_pos == 0) {
 				auto [type, attrs] = DeltaVObject::ParseLine(trim(deltav_line),qoute_count,prev_value);	//Given that ParseLine modifies qoute_count, I have to call it twice. Here
