@@ -61,7 +61,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=StringOperations.cpp
+FileName=Utils.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -81,7 +81,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=StringOperations.h
+FileName=Utils.h
 CompileCpp=1
 Folder=
 Compile=1
