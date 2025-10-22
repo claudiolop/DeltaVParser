@@ -1,5 +1,5 @@
 #include "DeltaVObject.h"
-#include "StringOperations.h"
+#include "Utils.h"
 #include <fstream>
 
 TableConfig DeltaVObject::type_config;

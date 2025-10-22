@@ -1,5 +1,5 @@
 #include "DeltaVObject.h"
-#include "StringOperations.h"
+#include "Utils.h"
 #include <stack>
 #include <fstream>
 
@@ -11,7 +11,7 @@ string object_time;
 unique_ptr<DeltaVObject> deltav_object = nullptr;
 unique_ptr<DeltaVObject> top_object = nullptr;
 stack<DeltaVObject*> object_stack;
-bool add_attr= false;
+
 uint64_t line_count=0;
 map<string, TableConfig> type_config;
 map<string, TableConfig> table_config;
@@ -39,7 +39,6 @@ void printAllLevels() {
 
 	if (type_config[top_object->type].data_action=="SKIP") return;
 	createOutTable(table_config[type_config[top_object->type].data_table].headers,type_config[object_stack.top()->type].data_table);
-//	if (type_config[object_stack.top()->type].avoid_type) return;
 	string file_path="OutputTables/"+type_config[object_stack.top()->type].data_table+".csv";
 	ofstream file(file_path, ios::app | ios::binary);
 	DeltaVObject::type_config=type_config[top_object->type];
@@ -65,7 +64,7 @@ void printFirstLevel() {
 
 	if (type_config[top_object->type].first_level_action=="INDIVIDUAL") {
 		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table);
-		ofstream file(file_path, ios::app | ios::binary);     // Open Source Filesda
+		ofstream file(file_path, ios::app | ios::binary);    
 		text=object_stack.top()->type+",";
 		for (const auto& attr : top_object->attributes) {
 			if (attribute_map.count(trim(attr.name))>0) {
@@ -82,17 +81,14 @@ void printFirstLevel() {
 	}
 	if (type_config[top_object->type].first_level_action=="COMBINE") {
 		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table);
-		ofstream file(file_path, ios::app | ios::binary);     // Open Source Filesda
+		ofstream file(file_path, ios::app | ios::binary);    
 		DeltaVObject::table_file=move(file);
 		object_stack.top()->preOrder(depth,object_stack.top()->type+",","");
 	}
 
 }
 
-
-//OPEN BRANCH
 void openBranch() {
-	//errorHandler 200
 	if (type=="" and attrs.size()==0) {
 		cerr<<"\n\nERROR file_line:"<<line_count<<" Tying to create an object without type or attributes.\n";
 		exit(200);
@@ -105,7 +101,7 @@ void openBranch() {
 		return;
 	}
 
-	if (skip_count.size()>0)skip_count.back()++;
+	if (skip_count.size()>0 )skip_count.back()++;
 
 	deltav_object = make_unique<DeltaVObject>(type, attrs);								//Creating the new object with the information of the previous line.
 	DeltaVObject* new_object=deltav_object.get();										//Pointer to latter add the object to the stack.
@@ -136,7 +132,6 @@ void processPrevLine() {
 		attrs.clear();
 		return;
 	} else {
-		//errorHandler 100
 		cerr<<"\n\nERROR file_line:"<<line_count<<" Trying to add attributes without parent object.\n";
 		cerr<<"type: "<<type<<"\n";
 		for (auto attr : attrs) cerr<<"name:"<<attr.name<<" value:"<<attr.value<<"\n";
@@ -169,10 +164,9 @@ int main() {
 	cout << "\033[?25l" << flush; // Hide cursor
 	cout<<"Start: ";
 	std::chrono::steady_clock::time_point start_time=printCurrentTime(std::chrono::steady_clock::time_point{});
-	bool MultiLineComment=false;
 	int qoute_count=0;
 	int comment_count=0;
-	int update_rate=10000;
+	
 	vector<string> deltav_line;
 	string file_line;
 	vector<string> deltav_lines;
@@ -221,36 +215,35 @@ int main() {
 
 		if (file_line.empty()) continue;
 
-		//log_file<<line_count<<": "<<file_line<<"\n";
 		deltav_lines = splitString(file_line,qoute_count,comment_count);						//If there are { or } within the line, splits those lines
 		
 		for (string& deltav_line : deltav_lines) {
 			if (qoute_count%2==0) qoute_count=0;
 			if (comment_count%2==0) comment_count=0;
-			size_t user_pos = deltav_line.find("user=");			// Skip the lines starting with "user="
+
+			size_t user_pos = deltav_line.find("user=");			
 			if (user_pos == 0) {
-				auto [type, attrs] = DeltaVObject::ParseLine(trim(deltav_line),qoute_count,prev_value);	//Given that ParseLine modifies qoute_count, I have to call it twice. Here
+				auto [type, attrs] = DeltaVObject::ParseLine(trim(deltav_line),qoute_count,prev_value);	
 				object_user=attrs[0].value;
 				object_time=attrs[1].value;
 				attrs.clear();
 				continue;
 			}
 
-			//OPEN BRANCH
 			if (deltav_line=="{") {
 				openBranch();
 				continue;
 			}
-			//CLOSE BRANCH
 			if (deltav_line=="}") {
 				closeBranch();
 				continue;
 			}
 
 			processPrevLine();
+
 			deltav_line=trim(deltav_line);
 
-			auto parse_result = DeltaVObject::ParseLine(trim(deltav_line),qoute_count,prev_value);	//Given that ParseLine modifies qoute_count, I have to call it twice. Here
+			auto parse_result = DeltaVObject::ParseLine(trim(deltav_line),qoute_count,prev_value);
 			type=parse_result.first;
 			attrs=parse_result.second;
 
