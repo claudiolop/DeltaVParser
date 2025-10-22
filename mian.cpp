@@ -6,6 +6,8 @@
 
 using namespace std; // Import entire std namespace
 
+
+string output_folder;
 string object_user;
 string object_time;
 unique_ptr<DeltaVObject> deltav_object = nullptr;
@@ -36,10 +38,9 @@ void printHeaders() {
 }
 
 void printAllLevels() {
-
 	if (type_config[top_object->type].data_action=="SKIP") return;
-	createOutTable(table_config[type_config[top_object->type].data_table].headers,type_config[object_stack.top()->type].data_table);
-	string file_path="OutputTables/"+type_config[object_stack.top()->type].data_table+".csv";
+	createOutTable(table_config[type_config[top_object->type].data_table].headers,type_config[object_stack.top()->type].data_table,output_folder);
+	string file_path=output_folder+type_config[object_stack.top()->type].data_table+".csv";
 	ofstream file(file_path, ios::app | ios::binary);
 	DeltaVObject::type_config=type_config[top_object->type];
 	DeltaVObject::table_config=table_config[type_config[object_stack.top()->type].data_table];
@@ -56,14 +57,14 @@ void printFirstLevel() {
 	map<string,string> attribute_map;
 	int depth=0;
 	if (type_config[top_object->type].first_level_action=="SKIP" or type_config[top_object->type].first_level_action==" ") return;
-	file_path="OutputTables/"+type_config[object_stack.top()->type].first_level_table+".csv";
+	file_path=output_folder+type_config[object_stack.top()->type].first_level_table+".csv";
 	DeltaVObject::avoid_types=avoid_types;
 	DeltaVObject::skip_attributes=skip_attributes;
 	DeltaVObject::type_config=type_config[top_object->type];
 	DeltaVObject::table_config=table_config[type_config[object_stack.top()->type].first_level_table];
 
 	if (type_config[top_object->type].first_level_action=="INDIVIDUAL") {
-		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table);
+		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table,output_folder);
 		ofstream file(file_path, ios::app | ios::binary);    
 		text=object_stack.top()->type+",";
 		for (const auto& attr : top_object->attributes) {
@@ -80,7 +81,7 @@ void printFirstLevel() {
 		return;
 	}
 	if (type_config[top_object->type].first_level_action=="COMBINE") {
-		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table);
+		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table,output_folder);
 		ofstream file(file_path, ios::app | ios::binary);    
 		DeltaVObject::table_file=move(file);
 		object_stack.top()->preOrder(depth,object_stack.top()->type+",","");
@@ -161,6 +162,7 @@ void closeBranch() {
 
 
 int main() {
+	output_folder="OutputTables/";
 	cout << "\033[?25l" << flush; // Hide cursor
 	cout<<"Start: ";
 	std::chrono::steady_clock::time_point start_time=printCurrentTime(std::chrono::steady_clock::time_point{});
@@ -184,7 +186,7 @@ int main() {
 	//string SourceFile="fhx/LLDVGIA.fhx";
 	string SourceFile="fhx/PCL3.fhx";
 
-	deleteFilesInFolder("OutputTables");
+	deleteFilesInFolder(output_folder);
 
 	type_config=loadTypeConfig("TypeConfig");
 	table_config=loadTableConfig("TableConfig");
