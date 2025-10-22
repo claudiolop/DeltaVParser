@@ -25,18 +25,6 @@ string skip_types;
 string skip_attributes;
 vector<int> skip_count;
 
-void printHeaders() {
-	string text;
-	for (auto& table : default_tables) {
-		ofstream file("headers_out.csv", ios::app | ios::binary);     // Open Source File
-		text=table.first+",";
-		for (auto& header : table.second.headers) text+=header+",";
-		text.pop_back();
-		file<<text<<"\n";
-		file.close();
-	}
-}
-
 void printAllLevels() {
 	if (type_config[top_object->type].data_action=="SKIP") return;
 	createOutTable(table_config[type_config[top_object->type].data_table].headers,type_config[object_stack.top()->type].data_table,output_folder);
@@ -152,7 +140,13 @@ void closeBranch() {
 	}
 
 	if (object_stack.size()==1) {
-		for (auto att : top_object->attributes) insertHeader(default_tables[top_object->type],att.name);
+		if (type_config.find(top_object->type)==type_config.end()){
+			vector<string> headers;
+			for (const auto& attribute : top_object->attributes) headers.push_back(attribute.name);
+			updateConfig(top_object->type,headers);
+			type_config=loadTypeConfig();
+			table_config=loadTableConfig();
+		} 
 		printFirstLevel();
 		printAllLevels();
 	}

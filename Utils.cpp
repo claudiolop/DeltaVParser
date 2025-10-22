@@ -89,17 +89,6 @@ string escapeCSV(const string& data) {
     return escaped;
 }
 
-void insertHeader(TableConfig& table,string new_header){
-	bool header_found=false;
-	for (const auto header : table.headers){		//Search if the header exists.
-		if (header==new_header){
-			header_found=true;
-			break;
-		}
-	}
-	if (!header_found) table.headers.push_back(new_header);
-}
-
 vector<vector<string>> readCSVFile(string file_name){
     string line;
 	string current;
@@ -193,11 +182,40 @@ map<string, TableConfig> loadTableConfig(){
 }
 
 
-void updateConfig(string& file_name,string& type,vector<string>& headers){
-	string file_path="Config/"+file_name+".csv";
-	ofstream file(file_path, ios::app | ios::binary);  
+void updateConfig(string& type,vector<string>& headers){
+	bool file_exist=false;
 	
+	string file_path="Config/"+type_config_file;
+	ifstream file_check(file_path);
+    if (file_check.good()) file_exist=true;
+	file_check.close();
+	ofstream file(file_path, ios::app | ios::binary); 
+	if (!file_exist) file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";
+	file<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
+	for (const auto& header : headers){
+		file<<","<<escapeCSV(header);
+	}
+	file<<"\n";
+	file.close();
+	
+	file_exist=false;
+	file_path="Config/"+table_config_file;
+	file_check.open(file_path);
+    if (file_check.good()) file_exist=true;
+	file_check.close();
+	file.open(file_path, ios::app | ios::binary); 
+	if (!file_exist) file<<"TABLE,Column1,Column2,Column3\n";
+	file<<escapeCSV(type)<<",TYPE";
+	for (const auto& header : headers){
+		file<<","<<escapeCSV(header);
+	}
+	file<<"\n";
+	file<<escapeCSV(type+"_data")<<",TYPE,,,,ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT2 NAME,PARENT OBJECT 3,PARENT OBJECT3 NAME\n";
+	file.close();
 }
+
+
+
 string loadWordList(string file_name){
 	string loadWordList;
 	string line;

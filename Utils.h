@@ -34,13 +34,11 @@ string trim(const string &str);
 string skipNull(const string& str);
 string escapeCSV(const string& data);
 
-void insertHeader(TableConfig& table,string new_header);
-
 //Configuration and Output 
 vector<vector<string>> readCSVFile(string file_name);
 map<string, TableConfig> loadTypeConfig();
 map<string, TableConfig> loadTableConfig();
-void updateConfig(string& file_name,string& type,vector<string>& headers);
+void updateConfig(string& type,vector<string>& headers);
 string loadWordList(string file_name);
 void createOutTable(const vector<string>& headers,string file_name,string folder_name);
 
