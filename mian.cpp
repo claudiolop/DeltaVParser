@@ -35,7 +35,10 @@ void printAllLevels() {
 	DeltaVObject::table_file = std::move(file);
 	int depth=0;
 	string text=escapeCSV(top_object->type)+",";
-	text+=escapeCSV(trim(top_object->attributes[0].value))+",";
+	for (int i=0;i<=3;i++){
+		if (top_object->attributes.size()>i) text+=escapeCSV(top_object->attributes[i].value);
+		text+=",";
+	}
 	top_object->preOrder(depth,text,"");
 }
 
@@ -54,7 +57,7 @@ void printFirstLevel() {
 	if (type_config[top_object->type].first_level_action=="INDIVIDUAL") {
 		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table,output_folder);
 		ofstream file(file_path, ios::app | ios::binary);    
-		text=object_stack.top()->type+",";
+		text=escapeCSV(object_stack.top()->type)+",";
 		for (const auto& attr : top_object->attributes) {
 			if (attribute_map.count(trim(attr.name))>0) {
 				cerr<<"\n\nERROR Duplicate attribute name found. Type: "<<top_object->type<<" Name: "<<attr.name<<" Closing Line: "<<line_count<<"\n";
@@ -72,7 +75,8 @@ void printFirstLevel() {
 		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table,output_folder);
 		ofstream file(file_path, ios::app | ios::binary);    
 		DeltaVObject::table_file=move(file);
-		object_stack.top()->preOrder(depth,object_stack.top()->type+",","");
+		text=escapeCSV(object_stack.top()->type)+",";
+		object_stack.top()->preOrder(depth,text,"");
 	}
 
 }
@@ -209,7 +213,7 @@ int main() {
 		file_line=trim(file_line);
 
 		if (file_line.empty()) continue;
-
+		log_file<<line_count<<"\t"<<file_line<<"\n";
 		deltav_lines = splitString(file_line,qoute_count,comment_count);						//If there are { or } within the line, splits those lines
 		
 		for (string& deltav_line : deltav_lines) {
