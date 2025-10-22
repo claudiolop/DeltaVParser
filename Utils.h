@@ -39,7 +39,7 @@ vector<vector<string>> readCSVFile(string file_name);
 map<string, TableConfig> loadTypeConfig(string file_name);
 map<string, TableConfig> loadTableConfig(string file_name);
 string loadWordList(string file_name);
-void createOutTable(const vector<string>& headers,string file_name);
+void createOutTable(const vector<string>& headers,string file_name,string folder_name);
 
 
 //Update Stauts

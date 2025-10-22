@@ -47,17 +47,15 @@ void deleteFilesInFolder(const string& folderName){
     DWORD length = GetModuleFileName(NULL, buffer, MAX_PATH);
 	string folderPath;
 	string searchPath = string(buffer, length);
-	folderPath=searchPath.substr(0,searchPath.rfind('\\')+1)+folderName+"\\";
+	folderPath=searchPath.substr(0,searchPath.rfind('\\')+1)+folderName;
 	searchPath=folderPath+'\\'+"*.csv";
 	hFind = FindFirstFile(searchPath.c_str(), &fileData);
     if (hFind == INVALID_HANDLE_VALUE) return;
-	cout<<"Deleting old files...\r";
     do {
         if (strcmp(fileData.cFileName, ".") == 0 || strcmp(fileData.cFileName, "..") == 0) continue;
         string fullPath = folderPath + fileData.cFileName;
         if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) DeleteFile(fullPath.c_str());
     } while (FindNextFile(hFind, &fileData));
-
     FindClose(hFind);
 }
 
@@ -205,9 +203,9 @@ string loadWordList(string file_name){
     return loadWordList;
 }
 
-void createOutTable(const vector<string>& headers,string file_name){
+void createOutTable(const vector<string>& headers,string file_name,string folder_name){
 	string text;
-	string file_path="OutputTables/"+file_name+".csv";
+	string file_path=folder_name+file_name+".csv";
 	ifstream file_check(file_path);
     if (file_check.good()) return;
 	ofstream file(file_path, ios::app | ios::binary);   
@@ -217,7 +215,7 @@ void createOutTable(const vector<string>& headers,string file_name){
 	file.close();
 }
 
-uint64_t countLines(const std::string& filename) {
+uint64_t countLines(const string& filename) {
 	std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open " << filename << "!" << std::endl;
