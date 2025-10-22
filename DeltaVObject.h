@@ -1,6 +1,6 @@
 #ifndef DELTAVOBJECT_H
 #define DELTAVOBJECT_H
-#include "StringOperations.h"
+#include "Utils.h"
 #include <memory>
 
 
