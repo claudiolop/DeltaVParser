@@ -5,8 +5,10 @@
 #include <iostream>
 #include <map>
 #include <chrono>
-
 using namespace std; // Import entire std namespace.
+
+const string type_config_file="TypeConfig.csv";
+const string table_config_file="TableConfig.csv";
 
 struct TableConfig{
 	string first_level_action;
@@ -36,8 +38,9 @@ void insertHeader(TableConfig& table,string new_header);
 
 //Configuration and Output 
 vector<vector<string>> readCSVFile(string file_name);
-map<string, TableConfig> loadTypeConfig(string file_name);
-map<string, TableConfig> loadTableConfig(string file_name);
+map<string, TableConfig> loadTypeConfig();
+map<string, TableConfig> loadTableConfig();
+void updateConfig(string& file_name,string& type,vector<string>& headers);
 string loadWordList(string file_name);
 void createOutTable(const vector<string>& headers,string file_name,string folder_name);
 

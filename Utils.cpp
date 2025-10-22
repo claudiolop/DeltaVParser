@@ -138,7 +138,7 @@ vector<vector<string>> readCSVFile(string file_name){
 	return result;
 }
 
-map<string, TableConfig> loadTypeConfig(string file_name){
+map<string, TableConfig> loadTypeConfig(){
 	map<string, TableConfig> config_info;
 	string first_level_action;
 	string first_level_table;
@@ -147,7 +147,7 @@ map<string, TableConfig> loadTypeConfig(string file_name){
 	vector<string> headers;
     string type;
     
-	vector<vector<string>> csv_data =readCSVFile("Config/"+file_name+".csv");
+	vector<vector<string>> csv_data =readCSVFile("Config/"+type_config_file);
 
     int col_count;
     for (const auto& row : csv_data){
@@ -167,7 +167,7 @@ map<string, TableConfig> loadTypeConfig(string file_name){
 	return config_info;
 }
 
-map<string, TableConfig> loadTableConfig(string file_name){
+map<string, TableConfig> loadTableConfig(){
 	map<string, TableConfig> config_info;
 	string first_level_action;
 	string first_level_table;
@@ -176,7 +176,7 @@ map<string, TableConfig> loadTableConfig(string file_name){
 	vector<string> headers;
     string type;
     
-	vector<vector<string>> csv_data =readCSVFile("Config/"+file_name+".csv");
+	vector<vector<string>> csv_data =readCSVFile("Config/"+table_config_file);
     
     int col_count=0;
     for (const auto& row : csv_data){
@@ -192,6 +192,12 @@ map<string, TableConfig> loadTableConfig(string file_name){
 	return config_info;
 }
 
+
+void updateConfig(string& file_name,string& type,vector<string>& headers){
+	string file_path="Config/"+file_name+".csv";
+	ofstream file(file_path, ios::app | ios::binary);  
+	
+}
 string loadWordList(string file_name){
 	string loadWordList;
 	string line;

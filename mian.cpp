@@ -89,6 +89,24 @@ void printFirstLevel() {
 
 }
 
+void processPrevLine() {
+	if (type=="" and attrs.size()==0) return;
+
+	if (object_stack.size()>0) {
+		//if (type!="") object_stack.top()->addAttribute("TYPE",type);		//Add previous line type as an attribute to the last object
+		if (attrs.size()!=0) object_stack.top()->addAttributes(attrs);						//Add the previous line attributes to the last object
+		type="";
+		attrs.clear();
+		return;
+	} else {
+		cerr<<"\n\nERROR file_line:"<<line_count<<" Trying to add attributes without parent object.\n";
+		cerr<<"type: "<<type<<"\n";
+		for (auto attr : attrs) cerr<<"name:"<<attr.name<<" value:"<<attr.value<<"\n";
+		exit(100);
+	}
+}
+
+
 void openBranch() {
 	if (type=="" and attrs.size()==0) {
 		cerr<<"\n\nERROR file_line:"<<line_count<<" Tying to create an object without type or attributes.\n";
@@ -123,24 +141,6 @@ void openBranch() {
 	attrs.clear();
 }
 
-void processPrevLine() {
-	if (type=="" and attrs.size()==0) return;
-
-	if (object_stack.size()>0) {
-		//if (type!="") object_stack.top()->addAttribute("TYPE",type);		//Add previous line type as an attribute to the last object
-		if (attrs.size()!=0) object_stack.top()->addAttributes(attrs);						//Add the previous line attributes to the last object
-		type="";
-		attrs.clear();
-		return;
-	} else {
-		cerr<<"\n\nERROR file_line:"<<line_count<<" Trying to add attributes without parent object.\n";
-		cerr<<"type: "<<type<<"\n";
-		for (auto attr : attrs) cerr<<"name:"<<attr.name<<" value:"<<attr.value<<"\n";
-		exit(100);
-	}
-}
-
-//CLOSE BRANCH
 void closeBranch() {
 	processPrevLine();
 	if (skip_count.size()>0) {
@@ -158,7 +158,6 @@ void closeBranch() {
 	}
 	object_stack.pop();
 }
-
 
 
 int main() {
@@ -188,8 +187,8 @@ int main() {
 
 	deleteFilesInFolder(output_folder);
 
-	type_config=loadTypeConfig("TypeConfig");
-	table_config=loadTableConfig("TableConfig");
+	type_config=loadTypeConfig();
+	table_config=loadTableConfig();
 
 	avoid_types=loadWordList("AvoidTypes.csv");
 	skip_types=loadWordList("SkipTypes.csv");
