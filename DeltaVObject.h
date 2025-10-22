@@ -4,24 +4,24 @@
 #include <memory>
 
 
-using namespace std; // Import entire std namespace.
+using namespace std; 
 
 // Struct for attributes
 struct Attribute {
-    string name;  // Attribute name (e.g., "Name", "Breed")
-    string value; // Attribute value (e.g., "Fido", "Labrador")
+    string name;  
+    string value; 
 };
 
-// Class for Animal with dynamic attributes
+
 class DeltaVObject {
 public:
-	string type;  // Dynamic species read from file
+	string type; 
 	string user;
 	string time;
-    vector<Attribute> attributes; // Dynamic attributes
+    vector<Attribute> attributes; 
     vector<unique_ptr<DeltaVObject>> children;
 
-    // Constructor
+
     DeltaVObject(const string& types, const vector<Attribute>& attrs);
 
 	static TableConfig type_config;
@@ -30,19 +30,16 @@ public:
 	static string skip_attributes;
 	static ofstream& table_file;
 	static pair<string, vector<Attribute>> ParseLine(string line,int& qoute_count,string& prev_value);
-    // Method to add attribute dynamically
+    
     void addAttribute(const string& name, const string& value);
+	void addAttributes(const vector<Attribute>& attr_list);
 
-    // Method to add child
     void addChild(unique_ptr<DeltaVObject> child);
 
-    // Print method
     void print(int& depth,string preceding,string following) const;
-
-    // Pre-order traversal
     void preOrder(int& depth,string preceding,string following) const;
 
-    void addAttributes(const vector<Attribute>& attr_list);
+    
 };
 
 #endif 

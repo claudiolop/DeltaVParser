@@ -6,10 +6,9 @@ TableConfig DeltaVObject::type_config;
 TableConfig DeltaVObject::table_config;
 string DeltaVObject::avoid_types;
 string DeltaVObject::skip_attributes;
-ofstream& DeltaVObject::table_file = *(new ofstream()); // Dummy initialization
+ofstream& DeltaVObject::table_file = *(new ofstream()); 
 
-DeltaVObject::DeltaVObject(const string& type,const vector<Attribute>& attrs) : type(type),attributes(attrs) {
-}
+DeltaVObject::DeltaVObject(const string& type,const vector<Attribute>& attrs) : type(type),attributes(attrs) {}
 
 //Takes one DeltaV line and returns type and vector<Attributes>. 
 pair<string, vector<Attribute>> DeltaVObject::ParseLine(string line,int& qoute_count,string& prev_value) {
@@ -40,8 +39,6 @@ pair<string, vector<Attribute>> DeltaVObject::ParseLine(string line,int& qoute_c
   		}
 	  line=line.substr(qu_pos);
 	} 
-	
-		
 	//If I'm here, is eityher TYPE, or TYPE HEADER1=VAR1 or HEADER1=VAR1 OR 00 00 00 00
     size_t eq_pos = line.find('=');	
 	size_t sp_pos = line.find(' ');	
@@ -87,16 +84,10 @@ pair<string, vector<Attribute>> DeltaVObject::ParseLine(string line,int& qoute_c
 	return {type, attrs};
 }
 
-void DeltaVObject::addAttributes(const vector<Attribute>& attr_list) {
-    // Add new attribute
-    attributes.insert(attributes.end(),attr_list.begin(),attr_list.end());
-}
-
 void DeltaVObject::addAttribute(const string& name, const string& value) {
     // Check for duplicate attribute name
     for (const auto& attr : attributes) {
         if (attr.name == name) {
-            // Update existing attribute
             const_cast<Attribute&>(attr).value = value;
             return;
         }
@@ -105,13 +96,16 @@ void DeltaVObject::addAttribute(const string& name, const string& value) {
     attributes.push_back({name, value});
 }
 
+void DeltaVObject::addAttributes(const vector<Attribute>& attr_list) {
+    attributes.insert(attributes.end(),attr_list.begin(),attr_list.end());
+}
+
 void DeltaVObject::addChild(unique_ptr<DeltaVObject> child) {
     children.push_back(move(child));
 }
 
 void DeltaVObject::print(int& depth,string preceding,string following) const {
 		int att_count=0;
-		//porque children empty??
 		following.pop_back();
 		for (const auto& attr : attributes){
 			if (att_count>0){
@@ -125,7 +119,6 @@ void DeltaVObject::print(int& depth,string preceding,string following) const {
 }
 
 void DeltaVObject::preOrder(int& depth,string preceding,string following) const {
-	
 	if (type_config.first_level_action=="SKIP") return;
 	if (type!="") if (avoid_types.find(" "+type+" ")!=string::npos)	return;
 	if (depth>0 or type_config.first_level_action=="COMBINE"){
@@ -134,7 +127,6 @@ void DeltaVObject::preOrder(int& depth,string preceding,string following) const 
 		}else{
 			following=escapeCSV("["+trim(type)+"]")+",,"+following;
 		}
-
 		print(depth,preceding,following);
 	}
 	depth++;
