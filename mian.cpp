@@ -183,7 +183,7 @@ int main() {
 	string SourceFile="fhx/LLDVGIA.fhx";
 	//string SourceFile="fhx/PCL3.fhx";
 
-	//HOLA LUCHO!
+
 	deleteFilesInFolder(output_folder);
 
 	type_config=loadTypeConfig();
