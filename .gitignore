@@ -39,3 +39,5 @@ Log.txt
 
 #Condif Folder
 !/Config
+!/Reports
+!/Reports/**
