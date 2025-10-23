@@ -184,13 +184,15 @@ map<string, TableConfig> loadTableConfig(){
 
 void updateConfig(string& type,vector<string>& headers){
 	bool file_exist=false;
+	string text;
 	
+	//Update the Type_Config Table
 	string file_path="Config/"+type_config_file;
 	ifstream file_check(file_path);
     if (file_check.good()) file_exist=true;
 	file_check.close();
 	ofstream file(file_path, ios::app | ios::binary); 
-	if (!file_exist) file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";
+	if (!file_exist) file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
 	file<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
 	for (const auto& header : headers){
 		file<<","<<escapeCSV(header);
@@ -198,19 +200,28 @@ void updateConfig(string& type,vector<string>& headers){
 	file<<"\n";
 	file.close();
 	
+	//Update the Table Config Table
 	file_exist=false;
 	file_path="Config/"+table_config_file;
 	file_check.open(file_path);
     if (file_check.good()) file_exist=true;
 	file_check.close();
 	file.open(file_path, ios::app | ios::binary); 
-	if (!file_exist) file<<"TABLE,Column1,Column2,Column3\n";
-	file<<escapeCSV(type)<<",TYPE";
+	if (!file_exist) file<<"TABLE,Column1,Column2,Column3\n";	//If the file is not found, create the headers list of the config file
+	file<<escapeCSV(type)<<",TYPE";								//First Level Table
 	for (const auto& header : headers){
 		file<<","<<escapeCSV(header);
 	}
 	file<<"\n";
-	file<<escapeCSV(type+"_data")<<",TYPE,,,,ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT2 NAME,PARENT OBJECT 3,PARENT OBJECT3 NAME\n";
+	//Data Table
+	
+	text=escapeCSV(type+"_data")+",TYPE,";
+	for (int i=0;i<3;i++){
+		if (headers.size()>i) text+=escapeCSV(headers[i]);
+		text+=",";
+	}
+	
+	file<<text<<"ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT2 NAME,PARENT OBJECT 3,PARENT OBJECT3 NAME\n";
 	file.close();
 }
 

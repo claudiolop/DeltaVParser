@@ -35,7 +35,7 @@ void printAllLevels() {
 	DeltaVObject::table_file = std::move(file);
 	int depth=0;
 	string text=escapeCSV(top_object->type)+",";
-	for (int i=0;i<=3;i++){
+	for (int i=0;i<3;i++){
 		if (top_object->attributes.size()>i) text+=escapeCSV(top_object->attributes[i].value);
 		text+=",";
 	}
@@ -180,8 +180,8 @@ int main() {
 	//string SourceFile="fhx/Test.fhx";
 	//string SourceFile="fhx/SJC2020.fhx";
 	//string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
-	//string SourceFile="fhx/LLDVGIA.fhx";
-	string SourceFile="fhx/PCL3.fhx";
+	string SourceFile="fhx/LLDVGIA.fhx";
+	//string SourceFile="fhx/PCL3.fhx";
 
 	deleteFilesInFolder(output_folder);
 
@@ -261,7 +261,6 @@ int main() {
 	log_file.close();
 	cout<<"\nEnd: ";
 	printCurrentTime(start_time);
-	//printHeaders();
 	playEndSound();
 	return 0;
 }
