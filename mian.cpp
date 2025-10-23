@@ -2,10 +2,12 @@
 #include "Utils.h"
 #include <stack>
 #include <fstream>
-
+#include <set>
 
 using namespace std; // Import entire std namespace
 
+map<string, set<string>> typeToAttributes;
+map<string, set<string>> typeToChildTypes;
 
 string output_folder;
 string object_user;
@@ -24,6 +26,66 @@ string avoid_types;
 string skip_types;
 string skip_attributes;
 vector<int> skip_count;
+
+void collectSchema(DeltaVObject* obj) {
+    if (!obj) return;
+    string t = trim(obj->type);
+    if (t.empty()) return;
+    
+    for (const auto& attr : obj->attributes) {
+        string attr_name = trim(attr.name);
+        if (!attr_name.empty()) {
+            typeToAttributes[t].insert(attr_name);
+        }
+    }
+    
+    for (const auto& child : obj->children) {
+        string child_t = trim(child->type);
+        if (!child_t.empty()) {
+            typeToChildTypes[t].insert(child_t);
+        }
+        collectSchema(child.get());
+    }
+}
+
+void printSchema(){
+	ofstream schema_file("schema.csv");
+if (!schema_file.is_open()) {
+    cerr << "Error opening schema.csv" << endl;
+    return; // or handle error
+}
+schema_file << "Type,ItemType,ItemName\n";
+
+for (const auto& kv : typeToAttributes) {
+    const string& t = kv.first;
+    if (t.empty()) continue;
+
+    bool has_items = false;
+
+    for (const auto& a : kv.second) {
+        schema_file << escapeCSV(t) << ",Attribute," << escapeCSV(a) << "\n";
+        has_items = true;
+    }
+
+    auto child_it = typeToChildTypes.find(t);
+    if (child_it != typeToChildTypes.end()) {
+        for (const auto& c : child_it->second) {
+            schema_file << escapeCSV(t) << ",SubObject," << escapeCSV(c) << "\n";
+            has_items = true;
+        }
+    }
+
+    // Optional: if no items, output the type alone
+    // if (!has_items) {
+    //     schema_file << escapeCSV(t) << ",Type,\n";
+    // }
+}
+
+schema_file.close();
+}
+
+
+
 
 void printAllLevels() {
 	if (type_config[top_object->type].data_action=="SKIP") return;
@@ -153,6 +215,7 @@ void closeBranch() {
 		} 
 		printFirstLevel();
 		printAllLevels();
+		collectSchema(top_object.get());
 	}
 	object_stack.pop();
 }
@@ -260,6 +323,7 @@ int main() {
 	}
 	fhx_file.close();
 	log_file.close();
+	printSchema();
 	cout<<"\nEnd: ";
 	printCurrentTime(start_time);
 	playEndSound();
