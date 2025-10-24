@@ -2,9 +2,13 @@
 #include <windows.h>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
+#include <fstream>
 
 using namespace std; // Import entire std namespace.
 
+ofstream logFile;
+ofstream traceFile;
 
 
 vector<string> splitString(const string& str,int qoute_count, int& comment_count) {
@@ -57,18 +61,6 @@ void deleteFilesInFolder(const string& folderName){
         if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) DeleteFile(fullPath.c_str());
     } while (FindNextFile(hFind, &fileData));
     FindClose(hFind);
-}
-
-string doubleBackslashes(const string& path) {
-    std::string result;
-    for (char c : path) {
-        if (c == '\\') {
-            result += "\\\\";
-        } else {
-            result += c;
-        }
-    }
-    return result;
 }
 
 string trim(const string &str) {
@@ -263,20 +255,79 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 	file.close();
 }
 
+string getTimestamp() {
+    auto now = time(nullptr);
+    stringstream ss;
+    ss << put_time(localtime(&now), "%Y-%m-%d %H:%M:%S");
+    return ss.str();
+}
+
+// Function to initialize log files with timestamped names
+void initLogFiles() {
+    string timestamp = getTimestamp();
+    // Replace spaces and colons with underscores for filename
+    replace(timestamp.begin(), timestamp.end(), ' ', '_');
+    replace(timestamp.begin(), timestamp.end(), ':', '-');
+
+    string logFilePath = "parser_events_.log";//+ timestamp 
+    string traceFilePath = "parser_trace_.txt";
+
+    logFile.open(logFilePath, ios::out);
+    if (!logFile.is_open()) {
+        cerr << "ERROR: Failed to open log file: " << logFilePath << endl;
+        // Continue without logging to file, but use console
+    }
+
+    traceFile.open(traceFilePath, ios::out);
+    if (!traceFile.is_open()) {
+        cerr << "ERROR: Failed to open trace file: " << traceFilePath << endl;
+        // Continue without trace logging
+    }
+
+    // Log initialization event
+    if (logFile.is_open()) {
+        logFile << "[" << getTimestamp() << "] EVENT: Log file initialized: " << logFilePath << endl;
+        logFile.flush();
+    }
+}
+
+// Function to log events, warnings, or errors
+void logMessage(const string& severity, const string& message) {
+    string entry = "[" + getTimestamp() + "] " + severity + ": " + message;
+    if (logFile.is_open()) {
+        logFile << entry << endl;
+        logFile.flush();
+    }
+    // Also output to console for debugging
+    if (severity == "ERROR") {
+        cerr << entry << endl;
+    } else {
+        cout << entry << endl;
+    }
+}
+
+// Function to log a file line (trace)
+void logTraceLine(int lineNumber, const string& line) {
+    if (traceFile.is_open()) {
+        traceFile << "Line " << lineNumber << ": " << line << endl;
+        traceFile.flush();
+    }
+}
+
 uint64_t countLines(const string& filename) {
 	std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open " << filename << "!" << std::endl;
+        cerr << "Error: Could not open " << filename << "!" << endl;
         return 0;
     }
     cout.imbue(std::locale(cout.getloc(), new thousands_separator));
 	uint64_t line_count = 0;
-    std::string line;
+    string line;
 	
     char frames[] = {'|', '/', '-', '\\'};
 	int frame_count=0;
 	
-	while (std::getline(file, line)) {
+	while (getline(file, line)) {
 		line_count++;
 		if (line_count % 20000==0){
 			cout<<"\rCounting lines: "<<frames[frame_count]<<flush;
@@ -309,9 +360,9 @@ void updateProgress(uint64_t current_line,uint64_t total_lines, double update_ra
 	cout <<"Procesing file: " << "ETA:"<<eta_text<<" Line: "<<current_line<<" out of "<<total_lines;
     cout << " [";
     for (int i = 0; i < barWidth; ++i) {
-        if (i < pos) std::cout << "=";
-        else if (i == pos) std::cout << ">";
-        else std::cout << " ";
+        if (i < pos) cout << "=";
+        else if (i == pos) cout << ">";
+        else cout << " ";
     }
     cout << "] " << fixed << setprecision(1) << (progress * 100.0) << " %  \r";
     cout<<flush;
@@ -324,7 +375,7 @@ chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_poi
 		cout << put_time(localtime(&now), "%H:%M:%S")<<"\n";
 		return chrono::steady_clock::now();
 	}else{
-		auto duration = std::chrono::duration_cast<std::chrono::seconds>(chrono::steady_clock::now()-start_time);
+		auto duration = std::chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now()-start_time);
 		long long seconds =  duration.count();
     	long long minutes = seconds / 60;
     	seconds %= 60;

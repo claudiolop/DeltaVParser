@@ -5,6 +5,8 @@
 #include <iostream>
 #include <map>
 #include <chrono>
+#include <fstream>
+
 using namespace std; // Import entire std namespace.
 
 const string type_config_file="TypeConfig.csv";
@@ -28,7 +30,6 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
 
 //File Handling
 void deleteFilesInFolder(const string& folderName);
-string doubleBackslashes(const string& path);
  
 //String Handling
 string trim(const string &str);
@@ -43,6 +44,11 @@ void updateConfig(string& type,vector<string>& headers);
 string loadWordList(string file_name);
 void createOutTable(const vector<string>& headers,string file_name,string folder_name);
 
+//Log and Trace
+string getTimestamp();
+void initLogFiles();
+void logMessage(const string& severity, const string& message);
+void logTraceLine(int lineNumber, const string& line);
 
 //Update Stauts
 uint64_t countLines(const string& filename);

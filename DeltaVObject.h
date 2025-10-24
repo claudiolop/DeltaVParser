@@ -2,7 +2,7 @@
 #define DELTAVOBJECT_H
 #include "Utils.h"
 #include <memory>
-
+#include <fstream>
 
 using namespace std; 
 

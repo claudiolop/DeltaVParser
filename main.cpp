@@ -3,6 +3,7 @@
 #include <stack>
 #include <fstream>
 #include <set>
+#include <iostream>
 
 using namespace std; // Import entire std namespace
 
@@ -26,6 +27,8 @@ string avoid_types;
 string skip_types;
 string skip_attributes;
 vector<int> skip_count;
+
+
 
 void collectSchema(DeltaVObject* obj) {
     if (!obj) return;
@@ -94,7 +97,7 @@ void printAllLevels() {
 	ofstream file(file_path, ios::app | ios::binary);
 	DeltaVObject::type_config=type_config[top_object->type];
 	DeltaVObject::table_config=table_config[type_config[object_stack.top()->type].data_table];
-	DeltaVObject::table_file = std::move(file);
+	DeltaVObject::table_file = move(file);
 	int depth=0;
 	string text=escapeCSV(top_object->type)+",";
 	for (int i=0;i<3;i++){
@@ -222,17 +225,31 @@ void closeBranch() {
 
 
 int main(int argc, char* argv[]) {
-	string SourceFile;
+	initLogFiles();
+	string fhx_path;
+	bool merge = false;
+    bool trace = false;
+
 	if (argc < 2) {
-    	SourceFile="fhx/LLDVGIA.fhx";   
+    	cerr<<"A fhx file is required!\n";
+    	return 100;
    }
  
-	SourceFile=argv[1];
+	fhx_path=argv[1];
+	
+	
+    for (int i = 2; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "-m" || arg == "--merge") merge = true;
+        if (arg == "-t" || arg == "--trace") trace = true;
+    }
+
+
 
 	output_folder="OutputTables/";
 	cout << "\033[?25l" << flush; // Hide cursor
 	cout<<"Start: ";
-	std::chrono::steady_clock::time_point start_time=printCurrentTime(std::chrono::steady_clock::time_point{});
+	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
 	int qoute_count=0;
 	int comment_count=0;
 	
@@ -240,18 +257,17 @@ int main(int argc, char* argv[]) {
 	string file_line;
 	vector<string> deltav_lines;
 	string prev_value;
-	ofstream log_file("log.txt", std::ios::binary);
 
 	//CHEQUEAR QUE PASA CUANDO UN TYPO REPITE EL NOMBRE DEL ATTRIBUTO CON DISTINTOS VALORES
 	//EJEMPLO: DOMAIN
 
 	//CHECK ELECTRONIC SIGNATURE, EL NAME DE
 
-	//string SourceFile="fhx/Test.fhx";
-	//string SourceFile="fhx/SJC2020.fhx";
-	//string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
+	//string fhx_path="fhx/Test.fhx";
+	//string fhx_path="fhx/SJC2020.fhx";
+	//string fhx_path="fhx/CAMP_DeltaV_System1.fhx";
 	
-	//string SourceFile="fhx/PCL3.fhx";
+	//string fhx_path="fhx/PCL3.fhx";
 
 
 	deleteFilesInFolder(output_folder);
@@ -263,15 +279,15 @@ int main(int argc, char* argv[]) {
 	skip_types=loadWordList("SkipTypes.csv");
 	skip_attributes=loadWordList("SkipAttributes.csv");
 
-	cout<<"Using: "<<SourceFile<<"\n";
+	cout<<"Using: "<<fhx_path<<"\n";
 	
-	uint64_t total_lines = countLines(SourceFile);
+	uint64_t total_lines = countLines(fhx_path);
 	cout<<"Opening Source File\r";
 	
-	ifstream fhx_file(SourceFile, std::ios::binary);     // Open Source File
+	ifstream fhx_file(fhx_path, ios::binary);     // Open Source File
 
 	if (!fhx_file.is_open()) {
-		cerr << "ERROR: Can't open the fhx file: "+SourceFile << endl;
+		cerr << "ERROR: Can't open the fhx file: "<<fhx_path << endl;
 		return 100;
 	}
 
@@ -284,7 +300,9 @@ int main(int argc, char* argv[]) {
 		file_line=trim(file_line);
 
 		if (file_line.empty()) continue;
-		log_file<<line_count<<"\t"<<file_line<<"\n";
+		
+		if (trace) logTraceLine(line_count,file_line);
+	
 		deltav_lines = splitString(file_line,qoute_count,comment_count);						//If there are { or } within the line, splits those lines
 		
 		for (string& deltav_line : deltav_lines) {
@@ -329,7 +347,6 @@ int main(int argc, char* argv[]) {
 
 	}
 	fhx_file.close();
-	log_file.close();
 	printSchema();
 	cout<<"\nEnd: ";
 	printCurrentTime(start_time);
