@@ -59,6 +59,18 @@ void deleteFilesInFolder(const string& folderName){
     FindClose(hFind);
 }
 
+string doubleBackslashes(const string& path) {
+    std::string result;
+    for (char c : path) {
+        if (c == '\\') {
+            result += "\\\\";
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
 string trim(const string &str) {
     size_t first = str.find_first_not_of(" \t\r\n\0"); // Find first non-whitespace
     size_t last = str.find_last_not_of(" \t\r\n\0"); // Find last non-whitespace
@@ -98,6 +110,7 @@ vector<vector<string>> readCSVFile(string file_name){
 	ifstream file(file_name);	
 	if (!file.is_open()){
 		cerr<<"\nCan't open the file: "<<file_name;
+			int i;
 		exit (400);
 	}
 	getline(file, line); //Skips the header line
