@@ -221,7 +221,14 @@ void closeBranch() {
 }
 
 
-int main() {
+int main(int argc, char* argv[]) {
+	string SourceFile;
+	if (argc < 2) {
+    	SourceFile="fhx/LLDVGIA.fhx";   
+   }
+ 
+	SourceFile=argv[1];
+
 	output_folder="OutputTables/";
 	cout << "\033[?25l" << flush; // Hide cursor
 	cout<<"Start: ";
@@ -243,12 +250,12 @@ int main() {
 	//string SourceFile="fhx/Test.fhx";
 	//string SourceFile="fhx/SJC2020.fhx";
 	//string SourceFile="fhx/CAMP_DeltaV_System1.fhx";
-	string SourceFile="fhx/LLDVGIA.fhx";
+	
 	//string SourceFile="fhx/PCL3.fhx";
 
 
 	deleteFilesInFolder(output_folder);
-
+	
 	type_config=loadTypeConfig();
 	table_config=loadTableConfig();
 
@@ -257,10 +264,10 @@ int main() {
 	skip_attributes=loadWordList("SkipAttributes.csv");
 
 	cout<<"Using: "<<SourceFile<<"\n";
-
+	
 	uint64_t total_lines = countLines(SourceFile);
 	cout<<"Opening Source File\r";
-
+	
 	ifstream fhx_file(SourceFile, std::ios::binary);     // Open Source File
 
 	if (!fhx_file.is_open()) {
