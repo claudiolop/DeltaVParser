@@ -54,8 +54,8 @@ void collectSchema(DeltaVObject* obj) {
 void printSchema(){
 	ofstream schema_file("schema.csv");
 if (!schema_file.is_open()) {
-    cerr << "Error opening schema.csv" << endl;
-    return; // or handle error
+    logMessage("ERROR","Failed to open file: schema.csv");
+    return;
 }
 schema_file << "Type,ItemType,ItemName\n";
 
@@ -125,7 +125,7 @@ void printFirstLevel() {
 		text=escapeCSV(object_stack.top()->type)+",";
 		for (const auto& attr : top_object->attributes) {
 			if (attribute_map.count(trim(attr.name))>0) {
-				cerr<<"\n\nERROR Duplicate attribute name found. Type: "<<top_object->type<<" Name: "<<attr.name<<" Closing Line: "<<line_count<<"\n";
+				logMessage("ERROR","Duplicate attribute name found. Type: "+top_object->type+" Name: "+attr.name+" Closing Line: " + to_string(line_count));
 				exit(200);
 			}
 			attribute_map[attr.name]=trim(attr.value);
@@ -156,9 +156,7 @@ void processPrevLine() {
 		attrs.clear();
 		return;
 	} else {
-		cerr<<"\n\nERROR file_line:"<<line_count<<" Trying to add attributes without parent object.\n";
-		cerr<<"type: "<<type<<"\n";
-		for (auto attr : attrs) cerr<<"name:"<<attr.name<<" value:"<<attr.value<<"\n";
+		logMessage("ERROR","Trying to add attributes without parent object in line: "+to_string(line_count));
 		exit(100);
 	}
 }
@@ -166,7 +164,7 @@ void processPrevLine() {
 
 void openBranch() {
 	if (type=="" and attrs.size()==0) {
-		cerr<<"\n\nERROR file_line:"<<line_count<<" Tying to create an object without type or attributes.\n";
+		logMessage("ERROR","Tying to create an object without type or attributes in line: "+to_string(line_count));
 		exit(200);
 	}
 
@@ -225,19 +223,33 @@ void closeBranch() {
 
 
 int main(int argc, char* argv[]) {
-	initLogFiles();
 	string fhx_path;
 	bool merge = false;
     bool trace = false;
+	output_folder="OutputTables/";
+	int qoute_count=0;
+	int comment_count=0;
+	
+	vector<string> deltav_line;
+	string file_line;
+	vector<string> deltav_lines;
+	string prev_value;
+	
+	
+	cout << "\033[?25l" << flush; // Hide cursor
+	cout<<"Start: ";
+	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
+	initLogFiles();
+	
 
 	if (argc < 2) {
-    	cerr<<"A fhx file is required!\n";
+    	logMessage("ERROR","A fhx file is required!\n");
     	return 100;
    }
  
 	fhx_path=argv[1];
-	
-	
+	logMessage("EVENT","Using: "+fhx_path);
+	cout<<"Using: "<<fhx_path<<"\n";
     for (int i = 2; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-m" || arg == "--merge") merge = true;
@@ -246,17 +258,6 @@ int main(int argc, char* argv[]) {
 
 
 
-	output_folder="OutputTables/";
-	cout << "\033[?25l" << flush; // Hide cursor
-	cout<<"Start: ";
-	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
-	int qoute_count=0;
-	int comment_count=0;
-	
-	vector<string> deltav_line;
-	string file_line;
-	vector<string> deltav_lines;
-	string prev_value;
 
 	//CHEQUEAR QUE PASA CUANDO UN TYPO REPITE EL NOMBRE DEL ATTRIBUTO CON DISTINTOS VALORES
 	//EJEMPLO: DOMAIN
@@ -279,20 +280,22 @@ int main(int argc, char* argv[]) {
 	skip_types=loadWordList("SkipTypes.csv");
 	skip_attributes=loadWordList("SkipAttributes.csv");
 
-	cout<<"Using: "<<fhx_path<<"\n";
+	
 	
 	uint64_t total_lines = countLines(fhx_path);
 	cout<<"Opening Source File\r";
 	
+	logMessage("EVENT","Opening Source File");
 	ifstream fhx_file(fhx_path, ios::binary);     // Open Source File
 
 	if (!fhx_file.is_open()) {
-		cerr << "ERROR: Can't open the fhx file: "<<fhx_path << endl;
+		logMessage("ERROR","Can't open the fhx file: "+fhx_path);
 		return 100;
 	}
 
 	auto start = chrono::steady_clock::now();
 	auto last_update = start;
+	logMessage("EVENT","Procesing file");
 	while (getline(fhx_file, file_line)) {
 		line_count++;
 
