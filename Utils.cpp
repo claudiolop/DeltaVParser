@@ -45,6 +45,7 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
 }
 
 void deleteFilesInFolder(const string& folderName){
+	logMessage("EVENT","Deleting old output files.");
 	WIN32_FIND_DATA fileData;
     HANDLE hFind;
 	char buffer[MAX_PATH];
@@ -58,7 +59,10 @@ void deleteFilesInFolder(const string& folderName){
     do {
         if (strcmp(fileData.cFileName, ".") == 0 || strcmp(fileData.cFileName, "..") == 0) continue;
         string fullPath = folderPath + fileData.cFileName;
-        if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) DeleteFile(fullPath.c_str());
+        if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){
+			DeleteFile(fullPath.c_str());
+			logMessage("EVENT","Deleting: " + fullPath);
+		} 
     } while (FindNextFile(hFind, &fileData));
     FindClose(hFind);
 }
@@ -98,11 +102,10 @@ vector<vector<string>> readCSVFile(string file_name){
 	string current;
 	vector<vector<string>> result;
 	vector<string> row;
-		
+	logMessage("EVENT","Reading: "+file_name);
 	ifstream file(file_name);	
 	if (!file.is_open()){
-		cerr<<"\nCan't open the file: "<<file_name;
-			int i;
+		logMessage(ERROR,"Can't open the file: "+file_name);
 		exit (400);
 	}
 	getline(file, line); //Skips the header line
@@ -233,6 +236,7 @@ void updateConfig(string& type,vector<string>& headers){
 
 
 string loadWordList(string file_name){
+	logMessage("EVENT","Reading: "+file_name);
 	string loadWordList;
 	string line;
 	ifstream file("Config/"+file_name);
@@ -248,6 +252,7 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 	string file_path=folder_name+file_name+".csv";
 	ifstream file_check(file_path);
     if (file_check.good()) return;
+    logMessage("EVENT","Creating: "+file_name);
 	ofstream file(file_path, ios::app | ios::binary);   
 	for (const auto& header : headers) text+=escapeCSV(header)+",";
 	text.pop_back();
@@ -275,13 +280,11 @@ void initLogFiles() {
     logFile.open(logFilePath, ios::out);
     if (!logFile.is_open()) {
         cerr << "ERROR: Failed to open log file: " << logFilePath << endl;
-        // Continue without logging to file, but use console
     }
 
     traceFile.open(traceFilePath, ios::out);
     if (!traceFile.is_open()) {
         cerr << "ERROR: Failed to open trace file: " << traceFilePath << endl;
-        // Continue without trace logging
     }
 
     // Log initialization event
@@ -292,22 +295,18 @@ void initLogFiles() {
 }
 
 // Function to log events, warnings, or errors
-void logMessage(const string& severity, const string& message) {
+void logMessage(string severity, const string& message) {
     string entry = "[" + getTimestamp() + "] " + severity + ": " + message;
     if (logFile.is_open()) {
         logFile << entry << endl;
         logFile.flush();
     }
     // Also output to console for debugging
-    if (severity == "ERROR") {
-        cerr << entry << endl;
-    } else {
-        cout << entry << endl;
-    }
+    if (severity == "ERROR") cerr << entry << endl;
 }
 
 // Function to log a file line (trace)
-void logTraceLine(int lineNumber, const string& line) {
+void logTraceLine(uint64_t lineNumber, const string& line) {
     if (traceFile.is_open()) {
         traceFile << "Line " << lineNumber << ": " << line << endl;
         traceFile.flush();
@@ -315,10 +314,11 @@ void logTraceLine(int lineNumber, const string& line) {
 }
 
 uint64_t countLines(const string& filename) {
+	logMessage("EVENT","Counting lines");
 	std::ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "Error: Could not open " << filename << "!" << endl;
-        return 0;
+        logMessage("ERROR","Failed to open file: "+filename);
+        return 100;
     }
     cout.imbue(std::locale(cout.getloc(), new thousands_separator));
 	uint64_t line_count = 0;
@@ -337,7 +337,8 @@ uint64_t countLines(const string& filename) {
 	}
     file.close();
 	cout<<"\r";
-    return line_count;
+    logMessage("EVENT","Finished counting lines: " + to_string(line_count));
+	return line_count;
 }
 
 void updateProgress(uint64_t current_line,uint64_t total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update) {
