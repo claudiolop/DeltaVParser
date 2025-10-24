@@ -200,7 +200,10 @@ void updateConfig(string& type,vector<string>& headers){
     if (file_check.good()) file_exist=true;
 	file_check.close();
 	ofstream file(file_path, ios::app | ios::binary); 
-	if (!file_exist) file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
+	if (!file_exist){
+		file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
+		logMessage("WARNING","Creating file: "+file_path);
+	}
 	file<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
 	for (const auto& header : headers){
 		file<<","<<escapeCSV(header);
@@ -215,7 +218,10 @@ void updateConfig(string& type,vector<string>& headers){
     if (file_check.good()) file_exist=true;
 	file_check.close();
 	file.open(file_path, ios::app | ios::binary); 
-	if (!file_exist) file<<"TABLE,Column1,Column2,Column3\n";	//If the file is not found, create the headers list of the config file
+	if (!file_exist){
+		logMessage("WARNING","Creating file: "+file_path);
+		file<<"TABLE,Column1,Column2,Column3\n";	//If the file is not found, create the headers list of the config file
+	}
 	file<<escapeCSV(type)<<",TYPE";								//First Level Table
 	for (const auto& header : headers){
 		file<<","<<escapeCSV(header);

@@ -77,11 +77,6 @@ for (const auto& kv : typeToAttributes) {
             has_items = true;
         }
     }
-
-    // Optional: if no items, output the type alone
-    // if (!has_items) {
-    //     schema_file << escapeCSV(t) << ",Type,\n";
-    // }
 }
 
 schema_file.close();
@@ -208,6 +203,7 @@ void closeBranch() {
 
 	if (object_stack.size()==1) {
 		if (type_config.find(top_object->type)==type_config.end()){
+			logMessage("WARNING","Type: "+top_object->type+" not found in config tables.");
 			vector<string> headers;
 			for (const auto& attribute : top_object->attributes) headers.push_back(attribute.name);
 			updateConfig(top_object->type,headers);
