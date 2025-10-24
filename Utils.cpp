@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <fstream>
+#include <locale>
 
 using namespace std; // Import entire std namespace.
 
@@ -45,7 +46,6 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
 }
 
 void deleteFilesInFolder(const string& folderName){
-	logMessage("EVENT","Deleting old output files.");
 	WIN32_FIND_DATA fileData;
     HANDLE hFind;
 	char buffer[MAX_PATH];
@@ -61,11 +61,18 @@ void deleteFilesInFolder(const string& folderName){
         string fullPath = folderPath + fileData.cFileName;
         if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){
 			DeleteFile(fullPath.c_str());
-			logMessage("EVENT","Deleting: " + fullPath);
+			logMessage("EVENT","Deleting data table: " + string(fileData.cFileName));
 		} 
     } while (FindNextFile(hFind, &fileData));
     FindClose(hFind);
 }
+
+string extractFileName(const string& fullPath) {
+    size_t lastSlash = fullPath.find_last_of("/\\");
+    if (lastSlash == string::npos) return fullPath;
+    return fullPath.substr(lastSlash + 1);
+}
+
 
 string trim(const string &str) {
     size_t first = str.find_first_not_of(" \t\r\n\0"); // Find first non-whitespace
@@ -83,6 +90,14 @@ string skipNull(const string& str){
 	}
 	return result;
 }
+
+string formatNumberWithSeparators(long long number) {
+    ostringstream oss;
+    oss.imbue(locale(oss.getloc(), new thousands_separator));
+    oss << number;
+    return oss.str();
+}
+
 
 string escapeCSV(const string& data) {
     if (data=="") return data;
@@ -102,7 +117,7 @@ vector<vector<string>> readCSVFile(string file_name){
 	string current;
 	vector<vector<string>> result;
 	vector<string> row;
-	logMessage("EVENT","Reading: "+file_name);
+	logMessage("EVENT","Reading configuration file: "+extractFileName(file_name));
 	ifstream file(file_name);	
 	if (!file.is_open()){
 		logMessage(ERROR,"Can't open the file: "+file_name);
@@ -202,7 +217,7 @@ void updateConfig(string& type,vector<string>& headers){
 	ofstream file(file_path, ios::app | ios::binary); 
 	if (!file_exist){
 		file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
-		logMessage("WARNING","Creating file: "+file_path);
+		logMessage("WARNING","Creating configuration file: "+type_config_file);
 	}
 	file<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
 	for (const auto& header : headers){
@@ -219,7 +234,7 @@ void updateConfig(string& type,vector<string>& headers){
 	file_check.close();
 	file.open(file_path, ios::app | ios::binary); 
 	if (!file_exist){
-		logMessage("WARNING","Creating file: "+file_path);
+		logMessage("WARNING","Creating configuration file: "+table_config_file);
 		file<<"TABLE,Column1,Column2,Column3\n";	//If the file is not found, create the headers list of the config file
 	}
 	file<<escapeCSV(type)<<",TYPE";								//First Level Table
@@ -242,7 +257,7 @@ void updateConfig(string& type,vector<string>& headers){
 
 
 string loadWordList(string file_name){
-	logMessage("EVENT","Reading: "+file_name);
+	logMessage("EVENT","Reading configuration file: "+file_name);
 	string loadWordList;
 	string line;
 	ifstream file("Config/"+file_name);
@@ -258,7 +273,7 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 	string file_path=folder_name+file_name+".csv";
 	ifstream file_check(file_path);
     if (file_check.good()) return;
-    logMessage("EVENT","Creating: "+file_name);
+    logMessage("EVENT","Creating data table: "+file_name);
 	ofstream file(file_path, ios::app | ios::binary);   
 	for (const auto& header : headers) text+=escapeCSV(header)+",";
 	text.pop_back();
@@ -273,10 +288,9 @@ string getTimestamp() {
     return ss.str();
 }
 
-// Function to initialize log files with timestamped names
 void initLogFiles() {
     string timestamp = getTimestamp();
-    // Replace spaces and colons with underscores for filename
+
     replace(timestamp.begin(), timestamp.end(), ' ', '_');
     replace(timestamp.begin(), timestamp.end(), ':', '-');
 
@@ -287,22 +301,23 @@ void initLogFiles() {
     if (!logFile.is_open()) {
         cerr << "ERROR: Failed to open log file: " << logFilePath << endl;
     }
-
+	logFile.imbue(locale(logFile.getloc(), new thousands_separator));
+		
     traceFile.open(traceFilePath, ios::out);
     if (!traceFile.is_open()) {
         cerr << "ERROR: Failed to open trace file: " << traceFilePath << endl;
     }
-
-    // Log initialization event
+	traceFile.imbue(locale(traceFile.getloc(), new thousands_separator));
+	
     if (logFile.is_open()) {
-        logFile << "[" << getTimestamp() << "] EVENT: Log file initialized: " << logFilePath << endl;
+        logFile << "TIME STAMP\tTYPE\tMESSAGE"<< endl;
         logFile.flush();
     }
 }
 
 // Function to log events, warnings, or errors
 void logMessage(string severity, const string& message) {
-    string entry = "[" + getTimestamp() + "] " + severity + ": " + message;
+    string entry = "[" + getTimestamp() + "]\t" + severity + "\t" + message;
     if (logFile.is_open()) {
         logFile << entry << endl;
         logFile.flush();
@@ -312,22 +327,22 @@ void logMessage(string severity, const string& message) {
 }
 
 // Function to log a file line (trace)
-void logTraceLine(uint64_t lineNumber, const string& line) {
+void logTraceLine(long long lineNumber, const string& line) {
     if (traceFile.is_open()) {
         traceFile << "Line " << lineNumber << ": " << line << endl;
         traceFile.flush();
     }
 }
 
-uint64_t countLines(const string& filename) {
+long long countLines(const string& filename) {
 	logMessage("EVENT","Counting lines");
-	std::ifstream file(filename);
+	ifstream file(filename);
     if (!file.is_open()) {
         logMessage("ERROR","Failed to open file: "+filename);
         return 100;
     }
-    cout.imbue(std::locale(cout.getloc(), new thousands_separator));
-	uint64_t line_count = 0;
+    cout.imbue(locale(cout.getloc(), new thousands_separator));
+	long long line_count = 0;
     string line;
 	
     char frames[] = {'|', '/', '-', '\\'};
@@ -343,11 +358,11 @@ uint64_t countLines(const string& filename) {
 	}
     file.close();
 	cout<<"\r";
-    logMessage("EVENT","Finished counting lines: " + to_string(line_count));
+	logMessage("EVENT","Completed line count: " + formatNumberWithSeparators(line_count));
 	return line_count;
 }
 
-void updateProgress(uint64_t current_line,uint64_t total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update) {
+void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update) {
 	auto now = chrono::steady_clock::now();
     double elapsed_since_last = chrono::duration<double>(now - last_update).count(); 	
 	if (elapsed_since_last < update_rate and total_lines-current_line>100) return;
@@ -378,15 +393,16 @@ void updateProgress(uint64_t current_line,uint64_t total_lines, double update_ra
 
 chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_point start_time) {
 	auto now = time(nullptr);
-	if (start_time == std::chrono::steady_clock::time_point{}){
+	if (start_time == chrono::steady_clock::time_point{}){
 		cout << put_time(localtime(&now), "%H:%M:%S")<<"\n";
 		return chrono::steady_clock::now();
 	}else{
-		auto duration = std::chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now()-start_time);
+		auto duration = chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now()-start_time);
 		long long seconds =  duration.count();
     	long long minutes = seconds / 60;
     	seconds %= 60;
 		cout << put_time(localtime(&now), "%H:%M:%S")<<"\n";
+		logMessage("EVENT","Total time: "+ to_string(minutes) + " min " + to_string(seconds) + " sec");
 		cout<<"Total Time: "<< minutes << " min " << seconds << " sec\n";
 		return chrono::steady_clock::now();
 	}
