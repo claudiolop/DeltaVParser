@@ -1,5 +1,6 @@
 #include "DeltaVObject.h"
 #include "Utils.h"
+#include <windows.h>
 #include <stack>
 #include <fstream>
 #include <set>
@@ -17,7 +18,7 @@ unique_ptr<DeltaVObject> deltav_object = nullptr;
 unique_ptr<DeltaVObject> top_object = nullptr;
 stack<DeltaVObject*> object_stack;
 
-uint64_t line_count=0;
+long long line_count=0;
 map<string, TableConfig> type_config;
 map<string, TableConfig> table_config;
 map<string, TableConfig> default_tables;
@@ -203,7 +204,7 @@ void closeBranch() {
 
 	if (object_stack.size()==1) {
 		if (type_config.find(top_object->type)==type_config.end()){
-			logMessage("WARNING","Type: "+top_object->type+" not found in config tables.");
+			logMessage("WARNING","Type: "+top_object->type+" not found in configuration");
 			vector<string> headers;
 			for (const auto& attribute : top_object->attributes) headers.push_back(attribute.name);
 			updateConfig(top_object->type,headers);
@@ -237,6 +238,7 @@ int main(int argc, char* argv[]) {
 	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
 	initLogFiles();
 	
+	
 
 	if (argc < 2) {
     	logMessage("ERROR","A fhx file is required!\n");
@@ -244,12 +246,20 @@ int main(int argc, char* argv[]) {
    }
  
 	fhx_path=argv[1];
+	string console_title="DeltaVParser: "+ extractFileName(fhx_path);
+	SetConsoleTitleA(console_title.c_str());
 	logMessage("EVENT","Using: "+fhx_path);
 	cout<<"Using: "<<fhx_path<<"\n";
     for (int i = 2; i < argc; ++i) {
         string arg = argv[i];
-        if (arg == "-m" || arg == "--merge") merge = true;
-        if (arg == "-t" || arg == "--trace") trace = true;
+        if (arg == "-m" || arg == "--merge"){
+			logMessage("EVENT","Merge option activated");
+			merge = true;
+		} 
+        if (arg == "-t" || arg == "--trace"){
+			logMessage("EVENT","Trace option activated");
+			trace = true;
+		}
     }
 
 
@@ -267,7 +277,7 @@ int main(int argc, char* argv[]) {
 	//string fhx_path="fhx/PCL3.fhx";
 
 
-	deleteFilesInFolder(output_folder);
+	if (!merge) deleteFilesInFolder(output_folder);
 	
 	type_config=loadTypeConfig();
 	table_config=loadTableConfig();
@@ -278,10 +288,10 @@ int main(int argc, char* argv[]) {
 
 	
 	
-	uint64_t total_lines = countLines(fhx_path);
+	long long total_lines = countLines(fhx_path);
 	cout<<"Opening Source File\r";
 	
-	logMessage("EVENT","Opening Source File");
+	logMessage("EVENT","Opening fhx file: "+extractFileName(fhx_path));
 	ifstream fhx_file(fhx_path, ios::binary);     // Open Source File
 
 	if (!fhx_file.is_open()) {
@@ -291,7 +301,6 @@ int main(int argc, char* argv[]) {
 
 	auto start = chrono::steady_clock::now();
 	auto last_update = start;
-	logMessage("EVENT","Procesing file");
 	while (getline(fhx_file, file_line)) {
 		line_count++;
 
@@ -348,6 +357,7 @@ int main(int argc, char* argv[]) {
 	fhx_file.close();
 	printSchema();
 	cout<<"\nEnd: ";
+	logMessage("EVENT","Completed processing file: "+extractFileName(fhx_path));
 	printCurrentTime(start_time);
 	playEndSound();
 	return 0;

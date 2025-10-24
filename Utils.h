@@ -31,11 +31,13 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
 
 //File Handling
 void deleteFilesInFolder(const string& folderName);
+string extractFileName(const string& fullPath);
  
 //String Handling
 string trim(const string &str);
 string skipNull(const string& str);
 string escapeCSV(const string& data);
+string formatNumberWithSeparators(long long number);
 
 //Configuration and Output 
 vector<vector<string>> readCSVFile(string file_name);
@@ -49,11 +51,11 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 string getTimestamp();
 void initLogFiles();
 void logMessage(string severity, const string& message);
-void logTraceLine(uint64_t lineNumber, const string& line);
+void logTraceLine(long long lineNumber, const string& line);
 
 //Update Stauts
-uint64_t countLines(const string& filename);
-void updateProgress(uint64_t current_line,uint64_t total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update);
+long long countLines(const string& filename);
+void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update);
 chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_point start_time);
 void playEndSound();
 
