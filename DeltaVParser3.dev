@@ -23,7 +23,7 @@ OverrideOutputName=DeltaVParser3.exe
 HostApplication=
 UseCustomMakefile=0
 CustomMakefile=
-CommandLine=
+CommandLine="C:\Users\clope1\OneDrive - Bayer\Documents\01 Trabajo\01 - Projects\DeltaVParser\fhx\SIS_DRY.fhx"
 Folders=
 IncludeVersionInfo=0
 SupportXPThemes=0
@@ -91,7 +91,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
-FileName=mian.cpp
+FileName=main.cpp
 CompileCpp=1
 Folder=
 Compile=1
