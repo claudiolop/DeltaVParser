@@ -28,7 +28,8 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
 
 //File Handling
 void deleteFilesInFolder(const string& folderName);
-
+string doubleBackslashes(const string& path);
+ 
 //String Handling
 string trim(const string &str);
 string skipNull(const string& str);
