@@ -35,7 +35,9 @@
 # SubFolders
 */
 #Log File
-Log.txt
+*.log
+*.txt
+*.csv
 
 #Condif Folder
 !/Config
