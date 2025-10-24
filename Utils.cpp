@@ -254,8 +254,6 @@ void updateConfig(string& type,vector<string>& headers){
 	file.close();
 }
 
-
-
 string loadWordList(string file_name){
 	logMessage("EVENT","Reading configuration file: "+file_name);
 	string loadWordList;

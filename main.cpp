@@ -5,9 +5,10 @@
 #include <fstream>
 #include <set>
 #include <iostream>
-
+#include <algorithm>
 using namespace std; // Import entire std namespace
 
+	
 map<string, set<string>> typeToAttributes;
 map<string, set<string>> typeToChildTypes;
 
@@ -30,57 +31,72 @@ string skip_attributes;
 vector<int> skip_count;
 
 
-
-void collectSchema(DeltaVObject* obj) {
+string joinPath(const vector<string>& path) {
+    string result;
+    for (size_t i = 0;i<path.size(); i++) {
+        result+= trim(path[i])+",";
+    }
+    result.pop_back();
+    return result;
+}
+void collectSchema(DeltaVObject* obj, vector<string>& path) {
     if (!obj) return;
     string t = trim(obj->type);
     if (t.empty()) return;
-    
+
+    // Add current type to the path
+    path.push_back(t);
+    string path_key = joinPath(path);
+
+    // Collect attributes for the current type path
     for (const auto& attr : obj->attributes) {
         string attr_name = trim(attr.name);
         if (!attr_name.empty()) {
-            typeToAttributes[t].insert(attr_name);
+            typeToAttributes[path_key].insert(attr_name);
         }
     }
-    
+
+    // Collect child types for the current type path
     for (const auto& child : obj->children) {
         string child_t = trim(child->type);
         if (!child_t.empty()) {
-            typeToChildTypes[t].insert(child_t);
+            typeToChildTypes[path_key].insert(child_t);
         }
-        collectSchema(child.get());
-    }
-}
-
-void printSchema(){
-	ofstream schema_file("schema.csv");
-if (!schema_file.is_open()) {
-    logMessage("ERROR","Failed to open file: schema.csv");
-    return;
-}
-schema_file << "Type,ItemType,ItemName\n";
-
-for (const auto& kv : typeToAttributes) {
-    const string& t = kv.first;
-    if (t.empty()) continue;
-
-    bool has_items = false;
-
-    for (const auto& a : kv.second) {
-        schema_file << escapeCSV(t) << ",Attribute," << escapeCSV(a) << "\n";
-        has_items = true;
+        // Recursively collect schema for child, passing the updated path
+        collectSchema(child.get(), path);
     }
 
-    auto child_it = typeToChildTypes.find(t);
-    if (child_it != typeToChildTypes.end()) {
-        for (const auto& c : child_it->second) {
-            schema_file << escapeCSV(t) << ",SubObject," << escapeCSV(c) << "\n";
-            has_items = true;
+    // Remove current type from path after processing
+    path.pop_back();
+}
+void printSchema() {
+    ofstream schema_file(output_folder+"\\schema.csv");
+    if (!schema_file.is_open()) {
+        logMessage("ERROR", "Failed to open file: schema.csv");
+        return;
+    }
+    schema_file << "Level,Type,ItemType,ItemName\n";
+
+    for (const auto& kv : typeToAttributes) {
+        const string& path_key = kv.first;
+        if (path_key.empty()) continue;
+
+      
+
+
+        // Write attributes for this path
+        for (const auto& a : kv.second) {
+            schema_file << "Attribute," << escapeCSV(a)<< ","<< path_key<<"\n";
+        }
+
+        // Write child types for this path
+        auto child_it = typeToChildTypes.find(path_key);
+        if (child_it != typeToChildTypes.end()) {
+            for (const auto& c : child_it->second)  schema_file << "SubObject," << escapeCSV(c) <<","<< path_key<< "\n";
         }
     }
-}
 
-schema_file.close();
+    schema_file.close();
 }
 
 
@@ -213,7 +229,8 @@ void closeBranch() {
 		} 
 		printFirstLevel();
 		printAllLevels();
-		collectSchema(top_object.get());
+		vector<string> path; // Initialize an empty path
+		collectSchema(top_object.get(), path);
 	}
 	object_stack.pop();
 }
