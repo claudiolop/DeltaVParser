@@ -406,12 +406,6 @@ chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_poi
 	}
 }
 
-void playEndSound() {
-	Beep(1245,300);
-	Sleep(100);
-	Beep(1245,300);
-}
-
 string GetFileVersion() {
     string version;
     string product_name;
