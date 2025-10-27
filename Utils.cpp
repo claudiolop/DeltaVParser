@@ -89,16 +89,6 @@ string trim(const string &str) {
 	return str.substr(first, (last - first + 1));
 }
 
-string skipNull(const string& str){
-	string result;
-	int int_char;
-	for (int i=0;i<str.size();i++){
-		int_char=static_cast<unsigned int>(static_cast<unsigned char>(str[i]));
-		if (int_char!=0 and int_char!=255 and int_char!=254 and str[i]!='\r') result+=str[i];
-	}
-	return result;
-}
-
 string formatNumberWithSeparators(long long number) {
     ostringstream oss;
     oss.imbue(locale(oss.getloc(), new thousands_separator));
@@ -300,8 +290,8 @@ void initLogFiles() {
     replace(timestamp.begin(), timestamp.end(), ' ', '_');
     replace(timestamp.begin(), timestamp.end(), ':', '-');
 
-    string logFilePath = "parser_events_.log";//+ timestamp 
-    string traceFilePath = "parser_trace_.txt";
+    string logFilePath = "parser_events.log";//+ timestamp 
+    string traceFilePath = "parser_trace.txt";
 
     logFile.open(logFilePath, ios::out);
     if (!logFile.is_open()) {
@@ -322,7 +312,7 @@ void initLogFiles() {
 }
 
 // Function to log events, warnings, or errors
-void logMessage(string severity, const string& message) {
+void logMessage(string severity,string message) {
     string entry = "[" + getTimestamp() + "]\t" + severity + "\t" + message;
     if (logFile.is_open()) {
         logFile << entry << endl;
@@ -433,14 +423,14 @@ string GetFileVersion() {
 
     wstring wVersion(static_cast<wchar_t*>(valuePtr), valueLen);
     version=string(wVersion.begin(), wVersion.end());
-    
+    version.pop_back();
     valuePtr = nullptr;
     valueLen = 0;
     if (!VerQueryValueW(versionInfo.data(), L"\\StringFileInfo\\040904E4\\ProductName", &valuePtr, &valueLen)) return "";
     
 	wstring wProduct(static_cast<wchar_t*>(valuePtr), valueLen);
     product_name=string(wProduct.begin(), wProduct.end());
-	
-	return product_name+" Version: "+version+"\n";
+	product_name.pop_back();
+	return product_name+" Version: "+version;
     
 }
