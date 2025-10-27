@@ -57,6 +57,5 @@ void logTraceLine(long long lineNumber, const string& line);
 long long countLines(const string& filename);
 void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update);
 chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_point start_time);
-void playEndSound();
 string GetFileVersion();
 #endif

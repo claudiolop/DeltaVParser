@@ -240,33 +240,20 @@ int main(int argc, char* argv[]) {
 	output_folder="OutputTables/";
 	int qoute_count=0;
 	int comment_count=0;
-	cout<<GetFileVersion();
 	vector<string> deltav_line;
 	string file_line;
 	vector<string> deltav_lines;
 	string prev_value;
 	
-	
 	cout << "\033[?25l" << flush; // Hide cursor
-	cout<<"Start: ";
-	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
-	initLogFiles();
 	
-	
-
-	if (argc < 2) {
-    	logMessage("ERROR","A fhx file is required!\n");
-    	return 100;
-   }
- 
-	fhx_path=argv[1];
-	string console_title="DeltaVParser: "+ extractFileName(fhx_path);
-	SetConsoleTitleA(console_title.c_str());
-	logMessage("EVENT","Using: "+fhx_path);
-	cout<<"Using: "<<fhx_path<<"\n";
-    for (int i = 2; i < argc; ++i) {
+	 for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
-        if (arg == "-m" || arg == "--merge"){
+        if (arg == "-v" || arg == "--version"){
+			cout<<GetFileVersion();
+			return 0;
+		} 
+		if (arg == "-m" || arg == "--merge"){
 			logMessage("EVENT","Merge option activated");
 			merge = true;
 		} 
@@ -276,8 +263,24 @@ int main(int argc, char* argv[]) {
 		}
     }
 
+	if (argc < 2) {
+    	logMessage("ERROR","A fhx file is required!\n");
+    	return 100;
+   }
+ 
+	fhx_path=argv[1];
+	string console_title="DeltaVParser: "+ extractFileName(fhx_path);
+	SetConsoleTitleA(console_title.c_str());
+	
+   
 
+	cout<<GetFileVersion();
+	cout<<"Start: ";
+	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
+	initLogFiles();
 
+	logMessage("EVENT","Using: "+fhx_path);
+	cout<<"Using: "<<fhx_path<<"\n";
 
 	//CHEQUEAR QUE PASA CUANDO UN TYPO REPITE EL NOMBRE DEL ATTRIBUTO CON DISTINTOS VALORES
 	//EJEMPLO: DOMAIN
@@ -373,6 +376,6 @@ int main(int argc, char* argv[]) {
 	cout<<"\nEnd: ";
 	logMessage("EVENT","Completed processing file: "+extractFileName(fhx_path));
 	printCurrentTime(start_time);
-	playEndSound();
+	Beep(1245,300);
 	return 0;
 }
