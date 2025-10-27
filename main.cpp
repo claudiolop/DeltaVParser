@@ -31,14 +31,7 @@ string skip_attributes;
 vector<int> skip_count;
 
 
-string joinPath(const vector<string>& path) {
-    string result;
-    for (size_t i = 0;i<path.size(); i++) {
-        result+= trim(path[i])+",";
-    }
-    result.pop_back();
-    return result;
-}
+
 void collectSchema(DeltaVObject* obj, vector<string>& path) {
     if (!obj) return;
     string t = trim(obj->type);
@@ -69,6 +62,7 @@ void collectSchema(DeltaVObject* obj, vector<string>& path) {
     // Remove current type from path after processing
     path.pop_back();
 }
+
 void printSchema() {
     ofstream schema_file(output_folder+"\\schema.csv");
     if (!schema_file.is_open()) {
@@ -81,21 +75,13 @@ void printSchema() {
         const string& path_key = kv.first;
         if (path_key.empty()) continue;
 
-      
-
-
         // Write attributes for this path
-        for (const auto& a : kv.second) {
-            schema_file << "Attribute," << escapeCSV(a)<< ","<< path_key<<"\n";
-        }
+        for (const auto& a : kv.second) schema_file << "Attribute," << escapeCSV(a)<< ","<< path_key<<"\n";
 
         // Write child types for this path
         auto child_it = typeToChildTypes.find(path_key);
-        if (child_it != typeToChildTypes.end()) {
-            for (const auto& c : child_it->second)  schema_file << "SubObject," << escapeCSV(c) <<","<< path_key<< "\n";
-        }
+        if (child_it != typeToChildTypes.end()) for (const auto& c : child_it->second)  schema_file << "SubObject," << escapeCSV(c) <<","<< path_key<< "\n";
     }
-
     schema_file.close();
 }
 
@@ -159,7 +145,6 @@ void processPrevLine() {
 	if (type=="" and attrs.size()==0) return;
 
 	if (object_stack.size()>0) {
-		//if (type!="") object_stack.top()->addAttribute("TYPE",type);		//Add previous line type as an attribute to the last object
 		if (attrs.size()!=0) object_stack.top()->addAttributes(attrs);						//Add the previous line attributes to the last object
 		type="";
 		attrs.clear();
@@ -184,7 +169,7 @@ void openBranch() {
 		return;
 	}
 
-	if (skip_count.size()>0 )skip_count.back()++;
+	if (skip_count.size()>0) skip_count.back()++;
 
 	deltav_object = make_unique<DeltaVObject>(type, attrs);								//Creating the new object with the information of the previous line.
 	DeltaVObject* new_object=deltav_object.get();										//Pointer to latter add the object to the stack.
@@ -226,7 +211,7 @@ void closeBranch() {
 		} 
 		printFirstLevel();
 		printAllLevels();
-		vector<string> path; // Initialize an empty path
+		vector<string> path;
 		collectSchema(top_object.get(), path);
 	}
 	object_stack.pop();
@@ -269,10 +254,9 @@ int main(int argc, char* argv[]) {
    }
  
 	fhx_path=argv[1];
+
 	string console_title="DeltaVParser: "+ extractFileName(fhx_path);
 	SetConsoleTitleA(console_title.c_str());
-	
-   
 
 	cout<<GetFileVersion();
 	cout<<"Start: ";
@@ -287,13 +271,6 @@ int main(int argc, char* argv[]) {
 
 	//CHECK ELECTRONIC SIGNATURE, EL NAME DE
 
-	//string fhx_path="fhx/Test.fhx";
-	//string fhx_path="fhx/SJC2020.fhx";
-	//string fhx_path="fhx/CAMP_DeltaV_System1.fhx";
-	
-	//string fhx_path="fhx/PCL3.fhx";
-
-
 	if (!merge) deleteFilesInFolder(output_folder);
 	
 	type_config=loadTypeConfig();
@@ -303,8 +280,6 @@ int main(int argc, char* argv[]) {
 	skip_types=loadWordList("SkipTypes.csv");
 	skip_attributes=loadWordList("SkipAttributes.csv");
 
-	
-	
 	long long total_lines = countLines(fhx_path);
 	cout<<"Opening Source File\r";
 	

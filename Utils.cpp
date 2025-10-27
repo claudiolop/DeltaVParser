@@ -72,6 +72,14 @@ string extractFileName(const string& fullPath) {
     if (lastSlash == string::npos) return fullPath;
     return fullPath.substr(lastSlash + 1);
 }
+string joinPath(const vector<string>& path) {
+    string result;
+    for (size_t i = 0;i<path.size(); i++) {
+        result+= trim(path[i])+",";
+    }
+    result.pop_back();
+    return result;
+}
 
 
 string trim(const string &str) {
