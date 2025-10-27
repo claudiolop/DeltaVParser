@@ -52,7 +52,7 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 string getTimestamp();
 void initLogFiles();
 void logMessage(string severity, const string& message);
-void logTraceLine(long long lineNumber, const string& line);
+void logTraceLine(long long lineNumber, const string& line,int level);
 
 //Update Stauts
 long long countLines(const string& filename);
