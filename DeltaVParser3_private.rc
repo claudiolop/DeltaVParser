@@ -16,14 +16,14 @@ FILETYPE VFT_APP
   {
     BLOCK "040904E4"
     {
-      VALUE "CompanyName", ""
+      VALUE "CompanyName", "Claudio Lopez"
       VALUE "FileVersion", "1.0.0.0"
-      VALUE "FileDescription", "Developed using the Dev-C++ IDE"
+      VALUE "FileDescription", "DeltaVParser"
       VALUE "InternalName", ""
       VALUE "LegalCopyright", ""
       VALUE "LegalTrademarks", ""
       VALUE "OriginalFilename", ""
-      VALUE "ProductName", ""
+      VALUE "ProductName", "DeltaVParser"
       VALUE "ProductVersion", "1.0.0.0"
     }
   }

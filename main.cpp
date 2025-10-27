@@ -99,9 +99,6 @@ void printSchema() {
     schema_file.close();
 }
 
-
-
-
 void printAllLevels() {
 	if (type_config[top_object->type].data_action=="SKIP") return;
 	createOutTable(table_config[type_config[top_object->type].data_table].headers,type_config[object_stack.top()->type].data_table,output_folder);
@@ -243,7 +240,7 @@ int main(int argc, char* argv[]) {
 	output_folder="OutputTables/";
 	int qoute_count=0;
 	int comment_count=0;
-	
+	cout<<GetFileVersion();
 	vector<string> deltav_line;
 	string file_line;
 	vector<string> deltav_lines;
