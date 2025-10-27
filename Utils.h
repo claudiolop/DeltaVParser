@@ -36,7 +36,6 @@ string joinPath(const vector<string>& path);
 
 //String Handling
 string trim(const string &str);
-string skipNull(const string& str);
 string escapeCSV(const string& data);
 string formatNumberWithSeparators(long long number);
 
@@ -51,7 +50,7 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 //Log and Trace
 string getTimestamp();
 void initLogFiles();
-void logMessage(string severity, const string& message);
+void logMessage(string severity,string message);
 void logTraceLine(long long lineNumber, const string& line,int level);
 
 //Update Stauts
