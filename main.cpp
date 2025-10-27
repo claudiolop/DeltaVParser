@@ -1,11 +1,13 @@
 #include "DeltaVObject.h"
 #include "Utils.h"
+#include "UnicodeFileReader.h"
 #include <windows.h>
 #include <stack>
 #include <fstream>
 #include <set>
 #include <iostream>
 #include <algorithm>
+
 using namespace std; // Import entire std namespace
 
 	
@@ -284,7 +286,11 @@ int main(int argc, char* argv[]) {
 	cout<<"Opening Source File\r";
 	
 	logMessage("EVENT","Opening fhx file: "+extractFileName(fhx_path));
-	ifstream fhx_file(fhx_path, ios::binary);     // Open Source File
+//	ifstream fhx_file(fhx_path, ios::binary);     // Open Source File
+	//UTF16
+	//wifstream fhx_file(fhx_path, ios::binary);  
+	//fhx_file.imbue(std::locale(fhx_file.getloc(), new std::codecvt_utf16<wchar_t, 0x10ffff, static_cast<std::codecvt_mode>(std::consume_header | std::little_endian)>));
+	UnicodeFileReader fhx_file(fhx_path);
 
 	if (!fhx_file.is_open()) {
 		logMessage("ERROR","Can't open the fhx file: "+fhx_path);
@@ -293,15 +299,21 @@ int main(int argc, char* argv[]) {
 
 	auto start = chrono::steady_clock::now();
 	auto last_update = start;
-	while (getline(fhx_file, file_line)) {
+//	while (getline(fhx_file, file_line16)) {
+	while (fhx_file.readLine(file_line)) {
 		line_count++;
-
-		file_line=skipNull(file_line);
+		//UTF16
+	/*	wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+		file_line = converter.to_bytes(file_line16);
+		
+		file_line=skipNull(file_line);*/
 		file_line=trim(file_line);
 
 		if (file_line.empty()) continue;
-		
-		if (trace) logTraceLine(line_count,file_line);
+		if (line_count==280){
+	//		cout<<"stop";
+		}
+		if (trace) logTraceLine(line_count,file_line,object_stack.size());
 	
 		deltav_lines = splitString(file_line,qoute_count,comment_count);						//If there are { or } within the line, splits those lines
 		

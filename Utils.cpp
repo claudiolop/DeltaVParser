@@ -333,9 +333,9 @@ void logMessage(string severity, const string& message) {
 }
 
 // Function to log a file line (trace)
-void logTraceLine(long long lineNumber, const string& line) {
+void logTraceLine(long long lineNumber, const string& line,int level) {
     if (traceFile.is_open()) {
-        traceFile << "Line " << lineNumber << ": " << line << endl;
+        traceFile << "Line " << lineNumber << "[" <<level<< "]: " << line << endl;
         traceFile.flush();
     }
 }
