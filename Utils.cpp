@@ -412,3 +412,33 @@ void playEndSound() {
 	Beep(1245,300);
 }
 
+string GetFileVersion() {
+    string version;
+    string product_name;
+	vector<wchar_t> path(MAX_PATH);
+    if (!GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()))) return "";
+        
+    DWORD dummy;
+    DWORD size = GetFileVersionInfoSizeW(path.data(), &dummy);
+    if (size == 0) return "";
+    vector<BYTE> versionInfo(size);
+
+    if (!GetFileVersionInfoW(path.data(), 0, size, versionInfo.data())) return "";
+    
+    void* valuePtr = nullptr;
+    UINT valueLen = 0;
+    if (!VerQueryValueW(versionInfo.data(), L"\\StringFileInfo\\040904E4\\FileVersion", &valuePtr, &valueLen)) return "";
+
+    wstring wVersion(static_cast<wchar_t*>(valuePtr), valueLen);
+    version=string(wVersion.begin(), wVersion.end());
+    
+    valuePtr = nullptr;
+    valueLen = 0;
+    if (!VerQueryValueW(versionInfo.data(), L"\\StringFileInfo\\040904E4\\ProductName", &valuePtr, &valueLen)) return "";
+    
+	wstring wProduct(static_cast<wchar_t*>(valuePtr), valueLen);
+    product_name=string(wProduct.begin(), wProduct.end());
+	
+	return product_name+" Version: "+version+"\n";
+    
+}
