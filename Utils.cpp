@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "UnicodeFileReader.h"
 #include <windows.h>
 #include <fstream>
 #include <iomanip>
@@ -332,7 +333,8 @@ void logTraceLine(long long lineNumber, const string& line,int level) {
 
 long long countLines(const string& filename) {
 	logMessage("EVENT","Counting lines");
-	ifstream file(filename);
+	
+	UnicodeFileReader file(filename);
     if (!file.is_open()) {
         logMessage("ERROR","Failed to open file: "+filename);
         return 100;
@@ -344,7 +346,7 @@ long long countLines(const string& filename) {
     char frames[] = {'|', '/', '-', '\\'};
 	int frame_count=0;
 	
-	while (getline(file, line)) {
+	while (file.readLine(line)) {
 		line_count++;
 		if (line_count % 20000==0){
 			cout<<"\rCounting lines: "<<frames[frame_count]<<flush;

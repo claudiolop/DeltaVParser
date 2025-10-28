@@ -300,7 +300,10 @@ int main(int argc, char* argv[]) {
 	while (fhx_file.readLine(file_line)) {
 		line_count++;
 		file_line=trim(file_line);
-
+		if (line_count==279){
+			cout<<"";
+		}
+		
 		if (file_line.empty()) continue;
 
 		if (trace) logTraceLine(line_count,file_line,object_stack.size());
