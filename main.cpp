@@ -284,10 +284,12 @@ int main(int argc, char* argv[]) {
 	skip_attributes=loadWordList("SkipAttributes.csv");
 
 	long long total_lines = countLines(fhx_path);
-	cout<<"Opening Source File\r";
+	cout<<"Opening Source File. \r";
 	
 	logMessage("EVENT","Opening fhx file: "+extractFileName(fhx_path));
 	UnicodeFileReader fhx_file(fhx_path);
+	cout<<"Encoding: "<<fhx_file.m_encoding<<"                         \n";
+	logMessage("EVENT","Encoding: "+fhx_file.m_encoding);
 
 	if (!fhx_file.is_open()) {
 		logMessage("ERROR","Can't open the fhx file: "+fhx_path);
@@ -300,8 +302,8 @@ int main(int argc, char* argv[]) {
 	while (fhx_file.readLine(file_line)) {
 		line_count++;
 		file_line=trim(file_line);
-		if (line_count==279){
-			cout<<"";
+		if (line_count==164){
+ 			cout<<"";
 		}
 		
 		if (file_line.empty()) continue;
