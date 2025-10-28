@@ -48,7 +48,7 @@ bool UnicodeFileReader::readLine(string& line) {
 
     if (m_encoding == "UTF-16LE") {
         wstring wline;
-        if (getline(m_wfile, wline)) {
+        if (getline(m_wfile, wline,L'\r')) {
             wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
             line = converter.to_bytes(wline);
             return true;
