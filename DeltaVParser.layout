@@ -17,9 +17,9 @@ LeftChar=1
 Order=2,0,1,4,3
 Focused=4
 [Editor_3]
-CursorCol=1
-CursorRow=2
-TopLine=1
+CursorCol=21
+CursorRow=52
+TopLine=16
 LeftChar=1
 [Editor_4]
 CursorCol=14
