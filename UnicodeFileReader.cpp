@@ -43,23 +43,6 @@ bool UnicodeFileReader::is_open() const {
     return m_isOpen;
 }
 
-bool UnicodeFileReader::readLine(string& line) {
-    if (!m_isOpen) return false;
-
-    if (m_encoding == "UTF-16LE") {
-        wstring wline;
-        if (getline(m_wfile, wline,L'\r')) {
-            wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
-            line = converter.to_bytes(wline);
-            return true;
-        }
-    } else {
-        if (getline(m_file, line)) {
-            return true;
-        }
-    }
-    return false;
-}
 
 void UnicodeFileReader::close(){
 	if (m_encoding == "UTF-16LE"){
@@ -68,4 +51,53 @@ void UnicodeFileReader::close(){
 		m_file.close();
 	}
 		
+}
+
+bool UnicodeFileReader::getline_cr_lf(wistream& is, wstring& line) {
+    line.clear();
+    wchar_t ch;
+    while (is.get(ch)) {
+        if (ch == L'\r') {
+            if (is.peek() == L'\n') is.get();
+            return true;
+        }
+        if (ch == L'\n') {
+            return true;
+        }
+        line.push_back(ch);
+    }
+    return !line.empty();
+}
+
+bool UnicodeFileReader::getline_cr_lf(istream& is, string& line) {
+    line.clear();
+    char ch;
+    while (is.get(ch)) {
+        if (ch == '\r') {
+            //if (is.peek() == '\n') is.get();
+            return true;
+        }
+        if (ch == '\n') {
+            return true;
+        }
+        line.push_back(ch);
+    }
+    return !line.empty();
+}
+
+bool UnicodeFileReader::readLine(string& line) {
+    if (!m_isOpen) return false;
+    if (m_encoding == "UTF-16LE") {
+        wstring wline;
+        if (getline_cr_lf(m_wfile, wline)) {
+            wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+            line = converter.to_bytes(wline);
+            return true;
+        }
+    } else {
+        if (getline_cr_lf(m_file, line)) {
+            return true;
+        }
+    }
+    return false;
 }
