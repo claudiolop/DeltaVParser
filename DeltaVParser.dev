@@ -23,30 +23,30 @@ OverrideOutputName=DeltaVParser.exe
 HostApplication=
 UseCustomMakefile=0
 CustomMakefile=
-CommandLine=-v
+CommandLine="C:\Users\clope1\OneDrive - Bayer\Documents\01 Trabajo\01 - Projects\DeltaVParser\fhx\Test.fhx"
 Folders=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;0;0;0;16;0;0;0
-UnitCount=5
+UnitCount=7
 
 [VersionInfo]
 Major=1
 Minor=0
-Release=0
+Release=2
 Build=0
 LanguageID=1033
 CharsetID=1252
 CompanyName=Claudio Lopez
-FileVersion=1.0.0.0
+FileVersion=1.0.2.0
 FileDescription=DeltaVParser
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=DeltaVParser
-ProductVersion=1.0.0.0
+ProductVersion=1.0.2.0
 AutoIncBuildNr=0
 SyncProduct=1
 
@@ -105,6 +105,26 @@ FileName=DeltaVParser_private.res
 Folder=Resources
 Compile=1
 Link=0
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit6]
+FileName=UnicodeFileReader.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit7]
+FileName=UnicodeFileReader.h
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
