@@ -118,10 +118,8 @@ vector<vector<string>> readCSVFile(string file_name){
 	vector<string> row;
 	logMessage("EVENT","Reading configuration file: "+extractFileName(file_name));
 	ifstream file(file_name);	
-	if (!file.is_open()){
-		logMessage(ERROR,"Can't open the file: "+file_name);
-		exit (400);
-	}
+	if (!file.is_open()) return result;
+		
 	getline(file, line); //Skips the header line
 	while (getline(file, line)) {
 		row.clear();

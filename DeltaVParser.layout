@@ -9,9 +9,9 @@ CursorRow=16
 TopLine=1
 LeftChar=1
 [Editor_2]
-CursorCol=1
-CursorRow=409
-TopLine=393
+CursorCol=25
+CursorRow=185
+TopLine=159
 LeftChar=1
 [Editors]
 Order=2,0,1,4,3
