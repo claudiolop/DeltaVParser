@@ -122,7 +122,7 @@ void printFirstLevel() {
 		text=escapeCSV(object_stack.top()->type)+",";
 		for (const auto& attr : top_object->attributes) {
 			if (attribute_map.count(trim(attr.name))>0) {
-				logMessage("ERROR","Duplicate attribute name found. Type: "+top_object->type+" Name: "+attr.name+" Closing Line: " + to_string(line_count));
+				logMessage("ERROR","Duplicate attribute name found. Type: "+top_object->type+" Name: "+attr.name+" Closing Line: " + to_string(line_count)+" Consider changing type to combined.");
 				exit(200);
 			}
 			attribute_map[attr.name]=trim(attr.value);
@@ -182,8 +182,8 @@ void openBranch() {
 	object_stack.push(new_object);														//Push it in the stack
 
 	//Add user and time if available
-	if (object_user!="") object_stack.top()->addAttribute("user",object_user);
-	if (object_time!="") object_stack.top()->addAttribute("time",object_time);
+	if (object_user!="" or object_time!="")  object_stack.top()->addAttribute("user",object_user);
+	if (object_user!="" or object_time!="") object_stack.top()->addAttribute("time",object_time);
 	object_user="";
 	object_time="";
 
@@ -282,7 +282,7 @@ int main(int argc, char* argv[]) {
 	avoid_types=loadWordList("AvoidTypes.csv");
 	skip_types=loadWordList("SkipTypes.csv");
 	skip_attributes=loadWordList("SkipAttributes.csv");
-
+//	long long total_lines= 10000000;
 	long long total_lines = countLines(fhx_path);
 	cout<<"Opening Source File. \r";
 	
@@ -302,7 +302,7 @@ int main(int argc, char* argv[]) {
 	while (fhx_file.readLine(file_line)) {
 		line_count++;
 		file_line=trim(file_line);
-		if (line_count==164){
+		if (line_count==57){
  			cout<<"";
 		}
 		
