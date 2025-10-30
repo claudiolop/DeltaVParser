@@ -247,7 +247,7 @@ void updateConfig(string& type,vector<string>& headers){
 		text+=",";
 	}
 	
-	file<<text<<"ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT2 NAME,PARENT OBJECT 3,PARENT OBJECT3 NAME\n";
+	file<<text<<"ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT2 NAME,PARENT OBJECT 3,PARENT OBJECT3 NAME,PARENT OBJECT 4,PARENT OBJECT4 NAME,PARENT OBJECT 5,PARENT OBJECT5 NAME\n";
 	file.close();
 }
 
@@ -274,6 +274,26 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 	text.pop_back();
 	file<<text<<"\n";
 	file.close();
+}
+
+void createOutTables(const map<string, TableConfig>& table_config,const map<string, TableConfig>& type_config,const string& output_folder){
+	for (const auto& type : type_config){
+		if (type.second.first_level_action!="SKIP"){
+			if (table_config.find(type.second.first_level_table)==table_config.end()){
+				logMessage("ERROR","Can't find table': "+type.second.first_level_table+" in TableConfig file");
+				exit (300);
+			}
+			createOutTable(table_config.at(type.second.first_level_table).headers,type.second.first_level_table,output_folder);
+		} 
+		if (type.second.data_action!="SKIP"){
+			if (table_config.find(type.second.data_table)==table_config.end()){
+				logMessage("ERROR","Can't find table': "+type.second.data_table+" in TableConfig file");
+				exit (300);
+			}
+			createOutTable(table_config.at(type.second.data_table).headers,type.second.data_table,output_folder);	
+		} 
+	} 
+	
 }
 
 string getTimestamp() {

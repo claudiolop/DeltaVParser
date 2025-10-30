@@ -89,7 +89,6 @@ void printSchema() {
 
 void printAllLevels() {
 	if (type_config[top_object->type].data_action=="SKIP") return;
-	createOutTable(table_config[type_config[top_object->type].data_table].headers,type_config[object_stack.top()->type].data_table,output_folder);
 	string file_path=output_folder+type_config[object_stack.top()->type].data_table+".csv";
 	ofstream file(file_path, ios::app | ios::binary);
 	DeltaVObject::type_config=type_config[top_object->type];
@@ -117,7 +116,6 @@ void printFirstLevel() {
 	DeltaVObject::table_config=table_config[type_config[object_stack.top()->type].first_level_table];
 
 	if (type_config[top_object->type].first_level_action=="INDIVIDUAL") {
-		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table,output_folder);
 		ofstream file(file_path, ios::app | ios::binary);    
 		text=escapeCSV(object_stack.top()->type)+",";
 		for (const auto& attr : top_object->attributes) {
@@ -134,7 +132,6 @@ void printFirstLevel() {
 		return;
 	}
 	if (type_config[top_object->type].first_level_action=="COMBINE") {
-		createOutTable(table_config[type_config[top_object->type].first_level_table].headers,type_config[object_stack.top()->type].first_level_table,output_folder);
 		ofstream file(file_path, ios::app | ios::binary);    
 		DeltaVObject::table_file=move(file);
 		text=escapeCSV(object_stack.top()->type)+",";
@@ -278,6 +275,8 @@ int main(int argc, char* argv[]) {
 	
 	type_config=loadTypeConfig();
 	table_config=loadTableConfig();
+    createOutTables(table_config,type_config,output_folder);
+	
 
 	avoid_types=loadWordList("AvoidTypes.csv");
 	skip_types=loadWordList("SkipTypes.csv");
