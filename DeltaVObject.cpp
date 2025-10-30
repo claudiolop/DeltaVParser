@@ -108,7 +108,7 @@ void DeltaVObject::print(int& depth,string preceding,string following) const {
 		int att_count=0;
 		following.pop_back();
 		for (const auto& attr : attributes){
-			if (att_count>0){
+			if (att_count>0 or attr.name=="user" or attributes.size()==1){
 				if (skip_attributes=="" or skip_attributes.find(" "+attr.name+" ")==string::npos){
 					string line=escapeCSV(trim(attr.name))+","+escapeCSV(trim(attr.value))+",";	
 					table_file<<preceding<<line<<following<<"\n";
@@ -123,9 +123,13 @@ void DeltaVObject::preOrder(int& depth,string preceding,string following) const 
 	if (type!="") if (avoid_types.find(" "+type+" ")!=string::npos)	return;
 	if (depth>0 or type_config.first_level_action=="COMBINE"){
 		if (attributes.size()>0){
-			following=escapeCSV("["+trim(type)+"]")+","+escapeCSV(trim(attributes[0].value))+","+following;
+			if (attributes[0].name!="user"){
+				following=escapeCSV("["+trim(type)+"]")+","+escapeCSV(trim(attributes[0].value))+","+following;
+			}else{
+				following=escapeCSV("["+trim(type)+"]")+",,"+following;
+			}
 		}else{
-			following=escapeCSV("["+trim(type)+"]")+",,"+following;
+				following=escapeCSV("["+trim(type)+"]")+",,"+following;
 		}
 		print(depth,preceding,following);
 	}
