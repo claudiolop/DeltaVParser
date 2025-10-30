@@ -46,6 +46,7 @@ map<string, TableConfig> loadTableConfig();
 void updateConfig(string& type,vector<string>& headers);
 string loadWordList(string file_name);
 void createOutTable(const vector<string>& headers,string file_name,string folder_name);
+void createOutTables(const map<string, TableConfig>& table_config,const map<string, TableConfig>& type_config,const string& output_folder);
 
 //Log and Trace
 string getTimestamp();

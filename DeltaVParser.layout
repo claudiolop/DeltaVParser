@@ -10,8 +10,8 @@ TopLine=1
 LeftChar=1
 [Editor_2]
 CursorCol=1
-CursorRow=277
-TopLine=256
+CursorRow=289
+TopLine=139
 LeftChar=1
 [Editors]
 Order=0,1,4,5,6,2
@@ -22,9 +22,9 @@ CursorRow=52
 TopLine=16
 LeftChar=1
 [Editor_4]
-CursorCol=1
-CursorRow=121
-TopLine=100
+CursorCol=3
+CursorRow=280
+TopLine=243
 LeftChar=1
 [Editor_5]
 CursorCol=1
