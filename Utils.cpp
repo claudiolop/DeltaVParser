@@ -165,10 +165,11 @@ map<string, TableConfig> loadTypeConfig(){
 			col_count++;
 			switch (col_count){
 			case 1:	type=cell; break;
-			case 2:	config_info[type].first_level_action=cell; break;
-			case 3:	config_info[type].first_level_table=cell; break;
-			case 4:	config_info[type].data_action=cell; break;
-			case 5:	config_info[type].data_table=cell; break;
+			case 2:	config_info[type].header_count=stoi(cell); break;
+			case 3:	config_info[type].first_level_action=cell; break;
+			case 4:	config_info[type].first_level_table=cell; break;
+			case 5:	config_info[type].data_action=cell; break;
+			case 6:	config_info[type].data_table=cell; break;
 			default: config_info[type].headers.push_back(cell);
 			}
 		}
@@ -202,7 +203,7 @@ map<string, TableConfig> loadTableConfig(){
 }
 
 
-void updateConfig(string& type,vector<string>& headers){
+void updateConfig(string& type,vector<string>& headers,int& header_count){
 	bool file_exist=false;
 	string text;
 	
@@ -213,10 +214,10 @@ void updateConfig(string& type,vector<string>& headers){
 	file_check.close();
 	ofstream file(file_path, ios::app | ios::binary); 
 	if (!file_exist){
-		file<<"TYPE,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
+		file<<"TYPE,HEADER COUNT,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
 		logMessage("WARNING","Creating configuration file: "+type_config_file);
 	}
-	file<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
+	file<<escapeCSV(type)<<","<<header_count<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
 	for (const auto& header : headers){
 		file<<","<<escapeCSV(header);
 	}
@@ -247,7 +248,7 @@ void updateConfig(string& type,vector<string>& headers){
 		text+=",";
 	}
 	
-	file<<text<<"ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT2 NAME,PARENT OBJECT 3,PARENT OBJECT3 NAME,PARENT OBJECT 4,PARENT OBJECT4 NAME,PARENT OBJECT 5,PARENT OBJECT5 NAME\n";
+	file<<text<<"ATTRIBUTE NAME,ATTRIBUTE VALUE,PARENT OBJECT 1,PARENT OBJECT 1 NAME,PARENT OBJECT 2,PARENT OBJECT 2 NAME,PARENT OBJECT 3,PARENT OBJECT 3 NAME,PARENT OBJECT 4,PARENT OBJECT 4 NAME,PARENT OBJECT 5,PARENT OBJECT 5 NAME\n";
 	file.close();
 }
 
