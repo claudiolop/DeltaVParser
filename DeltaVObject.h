@@ -9,7 +9,7 @@ using namespace std;
 // Struct for attributes
 struct Attribute {
     string name;  
-    string value; 
+    string value;
 };
 
 
@@ -19,6 +19,7 @@ public:
 	string user;
 	string time;
     vector<Attribute> attributes; 
+    int header_count=0;
     vector<unique_ptr<DeltaVObject>> children;
 
 
