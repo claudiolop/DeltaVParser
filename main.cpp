@@ -96,7 +96,7 @@ void printAllLevels() {
 	DeltaVObject::table_file = move(file);
 	int depth=0;
 	string text=escapeCSV(top_object->type)+",";
-	for (int i=0;i<3;i++){
+	for (int i=0;i<top_object->header_count;i++){
 		if (top_object->attributes.size()>i) text+=escapeCSV(top_object->attributes[i].value);
 		text+=",";
 	}
@@ -172,10 +172,16 @@ void openBranch() {
 
 	deltav_object = make_unique<DeltaVObject>(type, attrs);								//Creating the new object with the information of the previous line.
 	DeltaVObject* new_object=deltav_object.get();										//Pointer to latter add the object to the stack.
+	//NEW TO ADD header_count
+	deltav_object->header_count=deltav_object->attributes.size();
 
 	if (object_stack.empty()) top_object=move(deltav_object);							//If this is the first object, move it to the top
 	if (!object_stack.empty()) object_stack.top()->addChild(move(deltav_object));		//If there is a parent, move it as a child
+	
 
+
+	
+		
 	object_stack.push(new_object);														//Push it in the stack
 
 	//Add user and time if available
@@ -204,7 +210,7 @@ void closeBranch() {
 			logMessage("WARNING","Type: "+top_object->type+" not found in configuration");
 			vector<string> headers;
 			for (const auto& attribute : top_object->attributes) headers.push_back(attribute.name);
-			updateConfig(top_object->type,headers);
+			updateConfig(top_object->type,headers,top_object->header_count);
 			type_config=loadTypeConfig();
 			table_config=loadTableConfig();
 		} 

@@ -14,6 +14,7 @@ const string type_config_file="TypeConfig.csv";
 const string table_config_file="TableConfig.csv";
 
 struct TableConfig{
+	int header_count;
 	string first_level_action;
 	string first_level_table;
 	string data_action;
@@ -43,7 +44,7 @@ string formatNumberWithSeparators(long long number);
 vector<vector<string>> readCSVFile(string file_name);
 map<string, TableConfig> loadTypeConfig();
 map<string, TableConfig> loadTableConfig();
-void updateConfig(string& type,vector<string>& headers);
+void updateConfig(string& type,vector<string>& headers,int& header_count);
 string loadWordList(string file_name);
 void createOutTable(const vector<string>& headers,string file_name,string folder_name);
 void createOutTables(const map<string, TableConfig>& table_config,const map<string, TableConfig>& type_config,const string& output_folder);
