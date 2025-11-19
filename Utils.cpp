@@ -396,7 +396,7 @@ void updateProgress(long long current_line,long long total_lines, double update_
     
     eta_text=to_string(eta_min)+"m "+to_string(eta_sec)+"s";
     if (progress<0.02) eta_text="?m ??s";
-	cout <<"Procesing file: " << "ETA:"<<eta_text<<" Line: "<<current_line<<" out of "<<total_lines;
+	cout <<"Processing file: " << "ETA:"<<eta_text<<" Line: "<<current_line<<" out of "<<total_lines;
     cout << " [";
     for (int i = 0; i < barWidth; ++i) {
         if (i < pos) cout << "=";
