@@ -41,7 +41,3 @@
 
 #Condif Folder
 !/Config
-!/Reports
-!/Reports/**
-/Reports
-/Reports
