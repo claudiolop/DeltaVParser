@@ -39,5 +39,8 @@
 *.txt
 *.csv
 
-#Condif Folder
+# XSLM Files
+*.xlsm
+
+#Config Folder
 !/Config
