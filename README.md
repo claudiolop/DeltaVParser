@@ -40,7 +40,7 @@ DeltaV-FHX-Parser/
 │   └── *.csv                  # Generated CSV files (one per configured table)
 │
 ├── fhx/                       # Recommended folder for your DeltaV .fhx files
-│   └── CAMP_DeltaV_System1.fhx   # Example source file (update path in main3.cpp if needed)
+│   └── YourDatabase.fhx   # Example source file
 │
 └── README.md                  # This documentation file
 ---
