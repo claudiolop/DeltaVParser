@@ -1,6 +1,6 @@
 # DeltaV FHX Parser
 
-A high-performance C++ parser that converts **Emerson DeltaV** `.fhx` (Function Hierarchy Export) files into structured, human-readable CSV tables.
+A C++ parser that converts **Emerson DeltaV** `.fhx` files into structured, human-readable CSV tables.
 
 This tool is designed for automation, data analysis, and documentation of large DeltaV control systems by extracting objects, attributes, hierarchies, and relationships from the proprietary FHX format.
 
