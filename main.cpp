@@ -1,12 +1,12 @@
 #include "DeltaVObject.h"
 #include "Utils.h"
 #include "UnicodeFileReader.h"
-#include <windows.h>
 #include <stack>
 #include <fstream>
 #include <set>
 #include <iostream>
 #include <algorithm>
+#include "version.h"
 
 using namespace std; // Import entire std namespace
 
@@ -67,7 +67,7 @@ void collectSchema(DeltaVObject* obj, vector<string>& path) {
 }
 
 void printSchema() {
-    ofstream schema_file(output_folder+"\\schema.csv");
+    ofstream schema_file(output_folder+"/schema.csv");
     if (!schema_file.is_open()) {
         logMessage("ERROR", "Failed to open file: schema.csv");
         return;
@@ -242,7 +242,7 @@ int main(int argc, char* argv[]) {
 	 for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-v" || arg == "--version"){
-			cout<<GetFileVersion();
+			cout<<PRODUCT_NAME + " v" + PRODUCT_VERSION;
 			return 0;
 		} 
 		if (arg == "-m" || arg == "--merge"){
@@ -277,15 +277,13 @@ int main(int argc, char* argv[]) {
  
 	fhx_path=argv[1];
 
-	string console_title="DeltaVParser: "+ extractFileName(fhx_path);
-	SetConsoleTitleA(console_title.c_str());
 
-	cout<<GetFileVersion()<<"\n";
+	cout<<PRODUCT_NAME + " v" + PRODUCT_VERSION<<"\n";
 	cout<<"Start: ";
 	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
 	
 	
-	logMessage("EVENT",GetFileVersion());
+	logMessage("EVENT",PRODUCT_NAME + " v" + PRODUCT_VERSION);
 	logMessage("EVENT","Using: "+fhx_path);
 	cout<<"Using: "<<fhx_path<<"\n";
 
@@ -379,6 +377,5 @@ int main(int argc, char* argv[]) {
 	cout<<"\nEnd: ";
 	logMessage("EVENT","Completed processing file: "+extractFileName(fhx_path));
 	printCurrentTime(start_time);
-	if (!silent_mode) Beep(1245,300);
 	return 0;
 }

@@ -4,41 +4,40 @@
 #include <memory>
 #include <fstream>
 
-using namespace std; 
 
 // Struct for attributes
 struct Attribute {
-    string name;  
-    string value;
+    std::string name;  
+    std::string value;
 };
 
 
 class DeltaVObject {
 public:
-	string type; 
-	string user;
-	string time;
-    vector<Attribute> attributes; 
+	std::string type; 
+	std::string user;
+	std::string time;
+    std::vector<Attribute> attributes; 
     int header_count=0;
-    vector<unique_ptr<DeltaVObject>> children;
+    std::vector<std::unique_ptr<DeltaVObject>> children;
 
 
-    DeltaVObject(const string& types, const vector<Attribute>& attrs);
+    DeltaVObject(const std::string& types, const std::vector<Attribute>& attrs);
 
 	static TableConfig type_config;
 	static TableConfig table_config;
-	static string avoid_types;
-	static string skip_attributes;
-	static ofstream& table_file;
-	static pair<string, vector<Attribute>> ParseLine(string line,int& qoute_count,string& prev_value);
+	static std::string avoid_types;
+	static std::string skip_attributes;
+	static std::ofstream& table_file;
+	static std::pair<std::string, std::vector<Attribute>> ParseLine(std::string line,int& qoute_count,std::string& prev_value);
     
-    void addAttribute(const string& name, const string& value);
-	void addAttributes(const vector<Attribute>& attr_list);
+    void addAttribute(const std::string& name, const std::string& value);
+	void addAttributes(const std::vector<Attribute>& attr_list);
 
-    void addChild(unique_ptr<DeltaVObject> child);
+    void addChild(std::unique_ptr<DeltaVObject> child);
 
-    void print(int& depth,string preceding,string following) const;
-    void preOrder(int& depth,string preceding,string following) const;
+    void print(int& depth,std::string preceding,std::string following) const;
+    void preOrder(int& depth,std::string preceding,std::string following) const;
 
     
 };

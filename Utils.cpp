@@ -1,15 +1,13 @@
 #include "Utils.h"
 #include "UnicodeFileReader.h"
-#include <windows.h>
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
 #include <fstream>
 #include <locale>
-#include <shlobj.h>
-
+#include <filesystem>
 using namespace std; // Import entire std namespace.
-
+namespace fs = std::filesystem; 
 ofstream logFile;
 ofstream traceFile;
 
@@ -24,8 +22,8 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
         char_count++;
 		if (c=='"' and comment_count%2==0) qoute_count++;
 		if (qoute_count % 2 ==0){
-			if (c=='/' and char_count<=str.size() and comment_count%2==0) if (str[char_count+1]=='*') comment_count++;
-			if (c=='/' and comment_count%2!=0) if (str[char_count-1]=='*'){
+			if (c=='/' and char_count < (int)str.size()-1 and comment_count%2==0) comment_count++;
+			if (c=='/' and comment_count%2!=0 and char_count > 0) if (str[char_count-1]=='*'){
 				comment_count--;
 				continue;
 			} 
@@ -49,31 +47,19 @@ vector<string> splitString(const string& str,int qoute_count, int& comment_count
 }
 
 void deleteFilesInFolder(const string& folderName){
-	WIN32_FIND_DATA fileData;
-    HANDLE hFind;
-	char buffer[MAX_PATH];
-    DWORD length = GetModuleFileName(NULL, buffer, MAX_PATH);
-	string folderPath;
-	string searchPath = string(buffer, length);
-	folderPath=searchPath.substr(0,searchPath.rfind('\\')+1)+folderName;
-	searchPath=folderPath+'\\'+"*.csv";
-	hFind = FindFirstFile(searchPath.c_str(), &fileData);
-    if (hFind == INVALID_HANDLE_VALUE) return;
-    do {
-        if (strcmp(fileData.cFileName, ".") == 0 || strcmp(fileData.cFileName, "..") == 0) continue;
-        string fullPath = folderPath + fileData.cFileName;
-        if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){
-			DeleteFile(fullPath.c_str());
-			logMessage("EVENT","Deleting data table: " + string(fileData.cFileName));
-		} 
-    } while (FindNextFile(hFind, &fileData));
-    FindClose(hFind);
+	if (!fs::exists(folderName)) return;
+	for (const auto& entry : fs::directory_iterator(folderName)) {
+    	if (entry.path().extension() == ".csv")
+        	fs::remove(entry.path());
+	}
 }
 
 string extractFileName(const string& fullPath) {
-    size_t lastSlash = fullPath.find_last_of("/\\");
+    /*size_t lastSlash = fullPath.find_last_of("/\\");
     if (lastSlash == string::npos) return fullPath;
-    return fullPath.substr(lastSlash + 1);
+    return fullPath.substr(lastSlash + 1);*/
+    return fs::path(fullPath).filename().string();
+    
 }
 string joinPath(const vector<string>& path) {
     string result;
@@ -113,7 +99,7 @@ string escapeCSV(const string& data) {
     return escaped;
 }
 
-vector<vector<string>> readCSVFile(string file_name){
+std::vector<std::vector<std::string>> readCSVFile(string file_name){
     string line;
 	string current;
 	vector<vector<string>> result;
@@ -158,7 +144,7 @@ map<string, TableConfig> loadTypeConfig(){
 	vector<string> headers;
     string type;
     
-	vector<vector<string>> csv_data =readCSVFile("Config/"+type_config_file);
+	vector<vector<string>> csv_data =readCSVFile("Config/"+TYPE_CONFIG_FILE);
 
     int col_count;
     for (const auto& row : csv_data){
@@ -188,7 +174,7 @@ map<string, TableConfig> loadTableConfig(){
 	vector<string> headers;
     string type;
     
-	vector<vector<string>> csv_data =readCSVFile("Config/"+table_config_file);
+	vector<vector<string>> csv_data =readCSVFile("Config/"+TABLE_CONFIG_FILE);
     
     int col_count=0;
     for (const auto& row : csv_data){
@@ -205,19 +191,19 @@ map<string, TableConfig> loadTableConfig(){
 }
 
 
-void updateConfig(string& type,vector<string>& headers,int& header_count){
+void updateConfig(const string& type,vector<string>& headers,int& header_count){
 	bool file_exist=false;
 	string text;
 	
 	//Update the Type_Config Table
-	string file_path="Config/"+type_config_file;
+	string file_path="Config/"+TYPE_CONFIG_FILE;
 	ifstream file_check(file_path);
     if (file_check.good()) file_exist=true;
 	file_check.close();
 	ofstream file(file_path, ios::app | ios::binary); 
 	if (!file_exist){
 		file<<"_OBJ_TYPE,HEADER COUNT,FIRST LEVEL ACTION,FIRST LEVEL TABLE,DATA ACTION,DATA TABLE,Column1,Column2\n";	//If the file is not found, create the headers list of the config file
-		logMessage("WARNING","Creating configuration file: "+type_config_file);
+		logMessage("WARNING","Creating configuration file: "+TYPE_CONFIG_FILE);
 	}
 	file<<escapeCSV(type)<<","<<header_count<<",INDIVIDUAL,"<<escapeCSV(type)<<",INDIVIDUAL,"<<escapeCSV(type+"_data");
 	for (const auto& header : headers){
@@ -228,13 +214,13 @@ void updateConfig(string& type,vector<string>& headers,int& header_count){
 	
 	//Update the Table Config Table
 	file_exist=false;
-	file_path="Config/"+table_config_file;
+	file_path="Config/"+TABLE_CONFIG_FILE;
 	file_check.open(file_path);
     if (file_check.good()) file_exist=true;
 	file_check.close();
 	file.open(file_path, ios::app | ios::binary); 
 	if (!file_exist){
-		logMessage("WARNING","Creating configuration file: "+table_config_file);
+		logMessage("WARNING","Creating configuration file: "+TABLE_CONFIG_FILE);
 		file<<"TABLE,Column1,Column2,Column3\n";	//If the file is not found, create the headers list of the config file
 	}
 	file<<escapeCSV(type)<<",_OBJ_TYPE";								//First Level Table
@@ -254,7 +240,7 @@ void updateConfig(string& type,vector<string>& headers,int& header_count){
 	file.close();
 }
 
-string loadWordList(string file_name){
+string loadWordList(const string file_name){
 	logMessage("EVENT","Reading configuration file: "+file_name);
 	string loadWordList;
 	string line;
@@ -281,7 +267,7 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 
 void createOutTables(const map<string, TableConfig>& table_config,const map<string, TableConfig>& type_config,const string& output_folder){
 	//CREAR CARPETAS SI NO EXISTEN!
-	SHCreateDirectoryExA(NULL,output_folder.c_str(),NULL);
+	fs::create_directories(output_folder);
 	for (const auto& type : type_config){
 		if (type.second.first_level_action!="SKIP"){
 			if (table_config.find(type.second.first_level_table)==table_config.end()){
@@ -435,33 +421,3 @@ chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_poi
 	}
 }
 
-string GetFileVersion() {
-    string version;
-    string product_name;
-	vector<wchar_t> path(MAX_PATH);
-    if (!GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()))) return "";
-        
-    DWORD dummy;
-    DWORD size = GetFileVersionInfoSizeW(path.data(), &dummy);
-    if (size == 0) return "";
-    vector<BYTE> versionInfo(size);
-
-    if (!GetFileVersionInfoW(path.data(), 0, size, versionInfo.data())) return "";
-    
-    void* valuePtr = nullptr;
-    UINT valueLen = 0;
-    if (!VerQueryValueW(versionInfo.data(), L"\\StringFileInfo\\040904E4\\FileVersion", &valuePtr, &valueLen)) return "";
-
-    wstring wVersion(static_cast<wchar_t*>(valuePtr), valueLen);
-    version=string(wVersion.begin(), wVersion.end());
-    version.pop_back();
-    valuePtr = nullptr;
-    valueLen = 0;
-    if (!VerQueryValueW(versionInfo.data(), L"\\StringFileInfo\\040904E4\\ProductName", &valuePtr, &valueLen)) return "";
-    
-	wstring wProduct(static_cast<wchar_t*>(valuePtr), valueLen);
-    product_name=string(wProduct.begin(), wProduct.end());
-	product_name.pop_back();
-	return product_name+" Version: "+version;
-    
-}

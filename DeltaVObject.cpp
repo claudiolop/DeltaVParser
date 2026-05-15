@@ -1,6 +1,7 @@
 #include "DeltaVObject.h"
 #include "Utils.h"
 #include <fstream>
+using namespace std;
 
 TableConfig DeltaVObject::type_config;
 TableConfig DeltaVObject::table_config;

@@ -4,23 +4,22 @@
 
 #include <fstream>
 #include <string>
-using namespace std;
+
 
 class UnicodeFileReader {
 public:
-    UnicodeFileReader(const string& filename);
-    bool is_open() const;
-    bool readLine(string& line);
+    UnicodeFileReader(const std::string& filename);
+    
+	bool is_open() const;
+    bool readLine(std::string& line);
     void close();
-	string m_encoding;
+	std::string m_encoding;
 private:
     bool m_isOpen;
-    
+    bool readUtf16Line(std::string& line);
     bool m_bomPresent;
-    wifstream m_wfile;
-    ifstream m_file;
-    bool getline_cr_lf(istream& is, string& line);
-    bool getline_cr_lf(wistream& is, wstring& line);
+    std::ifstream m_file;
+    bool getline_cr_lf(std::istream& is, std::string& line);
 };
 
 #endif // UNICODE_FILE_READER_H
