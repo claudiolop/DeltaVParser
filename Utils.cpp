@@ -6,11 +6,13 @@
 #include <algorithm>
 #include <fstream>
 #include <locale>
+#include <shlobj.h>
 
 using namespace std; // Import entire std namespace.
 
 ofstream logFile;
 ofstream traceFile;
+
 
 
 vector<string> splitString(const string& str,int qoute_count, int& comment_count) {
@@ -278,6 +280,8 @@ void createOutTable(const vector<string>& headers,string file_name,string folder
 }
 
 void createOutTables(const map<string, TableConfig>& table_config,const map<string, TableConfig>& type_config,const string& output_folder){
+	//CREAR CARPETAS SI NO EXISTEN!
+	SHCreateDirectoryExA(NULL,output_folder.c_str(),NULL);
 	for (const auto& type : type_config){
 		if (type.second.first_level_action!="SKIP"){
 			if (table_config.find(type.second.first_level_table)==table_config.end()){
@@ -379,7 +383,7 @@ long long countLines(const string& filename) {
 	return line_count;
 }
 
-void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update) {
+void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update,bool silent_mode) {
 	auto now = chrono::steady_clock::now();
     double elapsed_since_last = chrono::duration<double>(now - last_update).count(); 	
 	if (elapsed_since_last < update_rate and total_lines-current_line>100) return;
@@ -393,18 +397,24 @@ void updateProgress(long long current_line,long long total_lines, double update_
     double eta = remaining / speed;    
     int eta_min = eta / 60;
     int eta_sec = (int)eta % 60;
-    
-    eta_text=to_string(eta_min)+"m "+to_string(eta_sec)+"s";
+	eta_text=to_string(eta_min)+"m "+to_string(eta_sec)+"s";
     if (progress<0.02) eta_text="?m ??s";
-	cout <<"Processing file: " << "ETA:"<<eta_text<<" Line: "<<current_line<<" out of "<<total_lines;
-    cout << " [";
-    for (int i = 0; i < barWidth; ++i) {
-        if (i < pos) cout << "=";
-        else if (i == pos) cout << ">";
-        else cout << " ";
-    }
-    cout << "] " << fixed << setprecision(1) << (progress * 100.0) << " %  \r";
-    cout<<flush;
+    if (silent_mode){
+		cout<<(int)(progress * 100.0)<<"pct\r ETA:"<<eta_text<<" Line: "<<current_line<<" out of "<<total_lines<<"\r";
+		cout.flush();
+	}else{
+		cout <<"Processing file: " << "ETA:"<<eta_text<<" Line: "<<current_line<<" out of "<<total_lines;
+    	cout << " [";
+    	for (int i = 0; i < barWidth; ++i) {
+        	if (i < pos) cout << "=";
+        	else if (i == pos) cout << ">";
+        	else cout << " ";
+    	}
+    	cout << "] " << fixed << setprecision(1) << (progress * 100.0) << " %  \r";
+		cout<<flush;
+	}
+    
+
     last_update = now;
 }
 

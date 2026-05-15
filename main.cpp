@@ -14,6 +14,7 @@ using namespace std; // Import entire std namespace
 map<string, set<string>> typeToAttributes;
 map<string, set<string>> typeToChildTypes;
 
+bool silent_mode;
 string output_folder;
 string object_user;
 string object_time;
@@ -227,6 +228,7 @@ int main(int argc, char* argv[]) {
 	string fhx_path;
 	bool merge = false;
     bool trace = false;
+    silent_mode = false;
 	output_folder="OutputTables/";
 	int qoute_count=0;
 	int comment_count=0;
@@ -234,7 +236,7 @@ int main(int argc, char* argv[]) {
 	string file_line;
 	vector<string> deltav_lines;
 	string prev_value;
-	
+	initLogFiles();
 	cout << "\033[?25l" << flush; // Hide cursor
 	
 	 for (int i = 1; i < argc; ++i) {
@@ -251,6 +253,21 @@ int main(int argc, char* argv[]) {
 			logMessage("EVENT","Trace option activated");
 			trace = true;
 		}
+
+		
+		if (arg == "-o" || arg == "--output") {
+	        if (i + 1 < argc) {
+			    output_folder= argv[++i];
+	            logMessage("EVENT", "Output folder set to: " + output_folder);
+	        } else {
+	            logMessage("ERROR", "Missing filename after -o. Using default folder.");
+	            // optionally: return 1; or exit(1);
+			}
+		}
+		if (arg == "-s" || arg == "--silent"){
+			logMessage("EVENT","Silent option activated");
+			silent_mode = true;
+		}
     }
 
 	if (argc < 2) {
@@ -266,7 +283,7 @@ int main(int argc, char* argv[]) {
 	cout<<GetFileVersion()<<"\n";
 	cout<<"Start: ";
 	chrono::steady_clock::time_point start_time=printCurrentTime(chrono::steady_clock::time_point{});
-	initLogFiles();
+	
 	
 	logMessage("EVENT",GetFileVersion());
 	logMessage("EVENT","Using: "+fhx_path);
@@ -300,7 +317,6 @@ int main(int argc, char* argv[]) {
 		logMessage("ERROR","Can't open the fhx file: "+fhx_path);
 		return 100;
 	}
-
 	auto start = chrono::steady_clock::now();
 	auto last_update = start;
 
@@ -355,7 +371,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		updateProgress(line_count, total_lines,2.5,start, last_update);
+		updateProgress(line_count, total_lines,2.5,start, last_update,silent_mode);
 
 	}
 	fhx_file.close();
@@ -363,6 +379,6 @@ int main(int argc, char* argv[]) {
 	cout<<"\nEnd: ";
 	logMessage("EVENT","Completed processing file: "+extractFileName(fhx_path));
 	printCurrentTime(start_time);
-	Beep(1245,300);
+	if (!silent_mode) Beep(1245,300);
 	return 0;
 }

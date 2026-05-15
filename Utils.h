@@ -27,6 +27,7 @@ struct thousands_separator : numpunct<char> {
     string do_grouping() const { return "\3"; } // Group every 3 digits
 };
 
+
 //Move to DeltaV Object...
 vector<string> splitString(const string& str,int qoute_count, int& comment_count);
 
@@ -57,7 +58,7 @@ void logTraceLine(long long lineNumber, const string& line,int level);
 
 //Update Stauts
 long long countLines(const string& filename);
-void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update);
+void updateProgress(long long current_line,long long total_lines, double update_rate,const chrono::steady_clock::time_point& start_time, chrono::steady_clock::time_point& last_update,bool silent_mode);
 chrono::steady_clock::time_point printCurrentTime(chrono::steady_clock::time_point start_time);
 string GetFileVersion();
 #endif
